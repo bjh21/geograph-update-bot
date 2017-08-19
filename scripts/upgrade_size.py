@@ -12,7 +12,7 @@ import sqlite3
 import tempfile
 
 logger = logging.getLogger(__name__)
-# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 site = pywikibot.Site()
 
@@ -55,20 +55,32 @@ def get_geograph_full(gridimage_id):
     r.raise_for_status()
     return r.content
 
+class NotEligible(Exception):
+    "This file is not eligible for resolution upgrade."
+    pass
+class MinorProblem(Exception):
+    pass
+class BadTemplate(MinorProblem):
+    pass
+class NotInGeographDatabase(MinorProblem):
+    pass
+class MajorProblem(Exception):
+    pass
+class BadGeographDatabase(MajorProblem):
+    pass
+
 def process_page(page):
     templates = page.templatesWithParams()
     geograph_templates = [t for t in templates if t[0] == geograph]
     if len(geograph_templates) == 0:
-        logger.info("%s: no {{Geograph}} template", page)
-        return
+        raise NotEligible("no {{Geograph}} template")
     if len(geograph_templates) > 1:
-        logger.warning("%s: %d {{Geograph}} templates", page)
-        return
+        raise BadTemplate("%d {{Geograph}} templates" %
+                          (len(geograph_templates),))
     try:
         gridimage_id = int(geograph_templates[0][1][0])
     except ValueError, IndexError:
-        logger.warning("%s: broken {{Geograph}} template", page)
-        return
+        raise BadTemplate("broken {{Geograph}} template")
     logger.info("%s: Geograph ID is %d", page, gridimage_id)
     c = geodb.cursor()
     c.execute("""
@@ -77,28 +89,24 @@ def process_page(page):
            WHERE gridimage_id = ?
         """, (gridimage_id,))
     if c.rowcount == 0:
-        logger.warning("%s: Geograph ID %d not in database",
-                       page, gridimage_id)
-        return
+        raise NotInGeographDatabase("Geograph ID %d not in database" %
+                                    (gridimage_id,))
     if c.rowcount > 1:
-        logger.error("Multiple database entries for Geograph ID %d",
-                     gridimage_id)
-        return
+        raise BadGeographDatabase(
+            "Multiple database entries for Geograph ID %d" % gridimage_id)
     gwidth, gheight, original_width, original_height = c.fetchone()
     if original_width == 0:
-        logger.info("%s: No high-res version available", page)
-        return
+        raise NotEligible("No high-res version available")
     logger.info("%s: %dx%d version available",
                 page, original_width, original_height)
     fi = page.latest_file_info
     logger.info("%s: current Commons version is %dx%d",
                 page, fi.width, fi.height)
     if (fi.width, fi.height) != (gwidth, gheight):
-        logger.info("%s: dimensions do not match Geograph basic image", page)
-        return
+        raise NotEligible("dimensions do not match Geograph basic image")
     gb = get_geograph_basic(gridimage_id)
     if hashlib.sha1(gb).hexdigest() != fi.sha1:
-        logger.info("%s: SHA-1 does not match Geograph basic image")
+        raise NotEligible("SHA-1 does not match Geograph basic image")
     logger.info("%s: Image matches. Update possible.", page)
     newimg = get_geograph_full(gridimage_id)
     logger.info("Got %d bytes of image", len(newimg))
@@ -115,7 +123,14 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         # assign the generator to the bot
         self.generator = generator
     def treat_page(self):
-        process_page(self.current_page)
+        try:
+            process_page(self.current_page)
+        except NotEligible as e:
+            logger.info(e)
+        except MinorProblem as e:
+            logger.warning(e)
+        except MajorProblem as e:
+            logger.error(e)
 
 def main(*args):
     options = {}
