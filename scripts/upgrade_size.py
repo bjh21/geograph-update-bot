@@ -1,18 +1,15 @@
 from __future__ import print_function
 
 import hashlib
-import logging
 import pywikibot
 from pywikibot.bot import (
     SingleSiteBot, ExistingPageBot, NoRedirectPageBot, AutomaticTWSummaryBot)
+import pywikibot.bot as bot
 import pywikibot.pagegenerators
 import re
 import requests
 import sqlite3
 import tempfile
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 site = pywikibot.Site()
 
@@ -81,7 +78,7 @@ def process_page(page):
         gridimage_id = int(geograph_templates[0][1][0])
     except ValueError, IndexError:
         raise BadTemplate("broken {{Geograph}} template")
-    logger.info("%s: Geograph ID is %d", page, gridimage_id)
+    bot.log("Geograph ID is %d" % (gridimage_id,))
     c = geodb.cursor()
     c.execute("""
         SELECT width, height, original_width, original_height
@@ -97,22 +94,20 @@ def process_page(page):
     gwidth, gheight, original_width, original_height = c.fetchone()
     if original_width == 0:
         raise NotEligible("No high-res version available")
-    logger.info("%s: %dx%d version available",
-                page, original_width, original_height)
+    bot.log("%dx%d version available" % (original_width, original_height))
     fi = page.latest_file_info
-    logger.info("%s: current Commons version is %dx%d",
-                page, fi.width, fi.height)
+    bot.log("current Commons version is %dx%d" % (fi.width, fi.height))
     if (fi.width, fi.height) != (gwidth, gheight):
         raise NotEligible("dimensions do not match Geograph basic image")
     gb = get_geograph_basic(gridimage_id)
     if hashlib.sha1(gb).hexdigest() != fi.sha1:
         raise NotEligible("SHA-1 does not match Geograph basic image")
-    logger.info("%s: Image matches. Update possible.", page)
+    bot.log("Image matches. Update possible.")
     newimg = get_geograph_full(gridimage_id)
-    logger.info("Got %d bytes of image", len(newimg))
+    bot.log("Got %d bytes of image" % (len(newimg),))
     tf = tempfile.NamedTemporaryFile()
     tf.write(newimg)
-    logger.info("File written to %s", tf.name)
+    bot.log("File written to %s" % (tf.name,))
     page.upload(tf.name, comment="Higher-resolution version from Geograph",
                 ignore_warnings=['exists'])
 
@@ -126,11 +121,11 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         try:
             process_page(self.current_page)
         except NotEligible as e:
-            logger.info(e)
+            bot.log(str(e))
         except MinorProblem as e:
-            logger.warning(e)
+            bot.warning(str(e))
         except MajorProblem as e:
-            logger.error(e)
+            bot.error(str(e))
 
 def main(*args):
     options = {}
