@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 site = pywikibot.Site()
+site.throttle.setDelays(writedelay=60)
+
 geograph = pywikibot.Page(site, "Template:Geograph")
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
