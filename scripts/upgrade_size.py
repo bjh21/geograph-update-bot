@@ -30,8 +30,7 @@ def get_geograph_info(gridimage_id):
     j = r.json()
     return j
 
-def get_geograph_basic(gridimage_id):
-    info = get_geograph_info(gridimage_id)
+def get_geograph_basic(gridimage_id, info):
     r = client.get(info['url'])
     r.raise_for_status()
     return r.content
@@ -39,8 +38,7 @@ def get_geograph_basic(gridimage_id):
 class StrangeURL(Exception):
     pass
 
-def get_geograph_full(gridimage_id):
-    info = get_geograph_info(gridimage_id)
+def get_geograph_full(gridimage_id, info):
     # Evil hack, but better than digging it out of HTML.
     m = re.search(r"_([0-9a-f]{8})\.jpg$", info['url'])
     if not m:
@@ -76,6 +74,7 @@ def process_page(page):
                           (len(geograph_templates),))
     try:
         gridimage_id = int(geograph_templates[0][1][0])
+        commons_author = geograph_templates[0][1][1]
     except ValueError, IndexError:
         raise BadTemplate("broken {{Geograph}} template")
     bot.log("Geograph ID is %d" % (gridimage_id,))
@@ -99,11 +98,14 @@ def process_page(page):
     bot.log("current Commons version is %dx%d" % (fi.width, fi.height))
     if (fi.width, fi.height) != (gwidth, gheight):
         raise NotEligible("dimensions do not match Geograph basic image")
-    gb = get_geograph_basic(gridimage_id)
-    if hashlib.sha1(gb).hexdigest() != fi.sha1:
-        raise NotEligible("SHA-1 does not match Geograph basic image")
+    geograph_info = get_geograph_info(gridimage_id)
+    if geograph_info['author_name'] != commons_author:
+        raise NotEligible("author does not match Geograph")
+    basic_image = get_geograph_basic(gridimage_id, geograph_info)
+    if hashlib.sha1(basic_image).hexdigest() != fi.sha1:
+        raise NotEligible("SHA-1 does not match Geograph basic image.")
     bot.log("Image matches. Update possible.")
-    newimg = get_geograph_full(gridimage_id)
+    newimg = get_geograph_full(gridimage_id, geograph_info)
     bot.log("Got %d bytes of image" % (len(newimg),))
     tf = tempfile.NamedTemporaryFile()
     tf.write(newimg)
