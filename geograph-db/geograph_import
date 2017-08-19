@@ -1,0 +1,20 @@
+#! /bin/bash
+
+set -euo pipefail
+
+sqlite3 geograph.sqlite3 <<EOF
+  CREATE TABLE gridimage_size (
+    gridimage_id INTEGER PRIMARY KEY,
+    width INTEGER,
+    height INTEGER,
+    original_width INTEGER,
+    original_height INTEGER,
+    original_diff
+    );
+EOF
+
+{
+  echo "BEGIN;"
+  gzip -dc gridimage_size.mysql | grep '^INSERT'
+  echo "COMMIT;"
+} | sqlite3 -echo geograph.sqlite3

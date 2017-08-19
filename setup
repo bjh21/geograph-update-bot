@@ -1,0 +1,12 @@
+#! /bin/bash
+
+set -euo pipefail
+
+rm -rf pywikibot-core
+mkdir pywikibot-core
+
+git clone --recursive https://gerrit.wikimedia.org/r/pywikibot/core.git \
+ pywikibot-core
+
+( cd pywikibot-core && python pwb.py generate_user_files )
+( cd pywikibot-core && python pwb.py login )
