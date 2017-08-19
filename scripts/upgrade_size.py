@@ -12,10 +12,9 @@ import sqlite3
 import tempfile
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 site = pywikibot.Site()
-site.throttle.setDelays(writedelay=60)
 
 geograph = pywikibot.Page(site, "Template:Geograph")
 
