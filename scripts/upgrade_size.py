@@ -3,6 +3,9 @@ from __future__ import print_function
 import hashlib
 import logging
 import pywikibot
+from pywikibot.bot import (
+    SingleSiteBot, ExistingPageBot, NoRedirectPageBot, AutomaticTWSummaryBot)
+import pywikibot.pagegenerators
 import re
 import requests
 import sqlite3
@@ -53,8 +56,7 @@ def get_geograph_full(gridimage_id):
     r.raise_for_status()
     return r.content
 
-def process_page(title):
-    page = pywikibot.FilePage(site, title)
+def process_page(page):
     templates = page.templatesWithParams()
     geograph_templates = [t for t in templates if t[0] == geograph]
     if len(geograph_templates) == 0:
@@ -107,4 +109,40 @@ def process_page(title):
     page.upload(tf.name, comment="Higher-resolution version from Geograph",
                 ignore_warnings=['exists'])
 
-process_page('File:Manchester Town Hall October 2010.jpg')
+class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
+    def __init__(self, generator, **kwargs):
+        # call constructor of the super class
+        super(UpgradeSizeBot, self).__init__(site=True, **kwargs)
+        # assign the generator to the bot
+        self.generator = generator
+    def treat_page(self):
+        process_page(self.current_page)
+
+def main(*args):
+    options = {}
+    # Process global arguments to determine desired site
+    local_args = pywikibot.handle_args(args)
+
+    # This factory is responsible for processing command line arguments
+    # that are also used by other scripts and that determine on which pages
+    # to work on.
+    genFactory = pywikibot.pagegenerators.GeneratorFactory()
+
+    # Parse command line arguments
+    for arg in local_args:
+
+        # Catch the pywikibot.pagegenerators options
+        if genFactory.handleArg(arg):
+            continue  # nothing to do here
+    # The preloading option is responsible for downloading multiple
+    # pages from the wiki simultaneously.
+    gen = genFactory.getCombinedGenerator(preload=True)
+    if gen:
+        # pass generator and private options to the bot
+        bot = UpgradeSizeBot(gen, **options)
+        bot.run()  # guess what it does
+        return True
+    else:
+        pywikibot.bot.suggest_help(missing_generator=True)
+        return False
+main()
