@@ -75,7 +75,9 @@ def process_page(page):
     try:
         gridimage_id = int(geograph_templates[0][1][0])
         commons_author = geograph_templates[0][1][1]
-    except ValueError, IndexError:
+    except ValueError:
+        raise BadTemplate("broken {{Geograph}} template")
+    except IndexError:
         raise BadTemplate("broken {{Geograph}} template")
     bot.log("Geograph ID is %d" % (gridimage_id,))
     c = geodb.cursor()
