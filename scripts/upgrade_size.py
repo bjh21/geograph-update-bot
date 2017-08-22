@@ -5,6 +5,7 @@ import pywikibot
 from pywikibot.bot import (
     SingleSiteBot, ExistingPageBot, NoRedirectPageBot, AutomaticTWSummaryBot)
 import pywikibot.bot as bot
+import pywikibot.data.api as api
 import pywikibot.pagegenerators
 import re
 import requests
@@ -131,6 +132,34 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         except MajorProblem as e:
             bot.error(str(e))
 
+def InterestingGeographGenerator(**kwargs):
+    for item in api.ListGenerator("categorymembers",
+            cmtitle="Category:Images from the Geograph British Isles project",
+            cmprop="title|sortkeyprefix", cmtype="file", **kwargs):
+        try:
+            gridimage_id = int(item['sortkeyprefix'])
+            c = geodb.cursor()
+            c.execute("""
+                SELECT width, height, original_width, original_height
+                    FROM gridimage_size
+                    WHERE gridimage_id = ?
+                """, (gridimage_id,))
+            if c.rowcount == 0:
+                raise NotInGeographDatabase("Geograph ID %d not in database" %
+                                            (gridimage_id,))
+            if c.rowcount > 1:
+                raise BadGeographDatabase(
+                    "Multiple database entries for Geograph ID %d" %
+                    (gridimage_id,))
+            (basic_width, basic_height,
+             original_width, original_height) = c.fetchone()
+            if original_width == 0:
+                # No high-res version available.
+                continue
+        except Exception:
+            pass # Anything odd happens, yield the item for further inspection.
+        yield pywikibot.FilePage(site, item['title'])
+    
 def main(*args):
     options = {}
     # Process global arguments to determine desired site
@@ -150,6 +179,8 @@ def main(*args):
     # The preloading option is responsible for downloading multiple
     # pages from the wiki simultaneously.
     gen = genFactory.getCombinedGenerator(preload=True)
+    if not gen:
+        gen = InterestingGeographGenerator()
     if gen:
         # pass generator and private options to the bot
         bot = UpgradeSizeBot(gen, **options)
