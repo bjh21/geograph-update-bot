@@ -111,7 +111,7 @@ def process_page(page):
     tf = tempfile.NamedTemporaryFile()
     tf.write(newimg)
     bot.log("File written to %s" % (tf.name,))
-    page.upload(tf.name, comment="Higher-resolution version from Geograph",
+    page.upload(tf.name, comment="Higher-resolution version from Geograph.",
                 ignore_warnings=['exists'])
 
 class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
