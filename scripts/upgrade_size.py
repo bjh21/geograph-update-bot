@@ -66,6 +66,8 @@ class BadGeographDatabase(MajorProblem):
     pass
 
 def process_page(page):
+    if not page.botMayEdit():
+        raise NotEligible("bot forbidden from editing this page")
     templates = page.templatesWithParams()
     geograph_templates = [t for t in templates if t[0] == geograph]
     if len(geograph_templates) == 0:
