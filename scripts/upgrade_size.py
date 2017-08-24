@@ -65,56 +65,6 @@ class MajorProblem(Exception):
 class BadGeographDatabase(MajorProblem):
     pass
 
-def process_page(page):
-    if not page.botMayEdit():
-        raise NotEligible("bot forbidden from editing this page")
-    templates = page.templatesWithParams()
-    geograph_templates = [t for t in templates if t[0] == geograph]
-    if len(geograph_templates) == 0:
-        raise NotEligible("no {{Geograph}} template")
-    if len(geograph_templates) > 1:
-        raise BadTemplate("%d {{Geograph}} templates" %
-                          (len(geograph_templates),))
-    try:
-        gridimage_id = int(geograph_templates[0][1][0])
-        commons_author = geograph_templates[0][1][1]
-    except ValueError:
-        raise BadTemplate("broken {{Geograph}} template")
-    except IndexError:
-        raise BadTemplate("broken {{Geograph}} template")
-    bot.log("Geograph ID is %d" % (gridimage_id,))
-    c = geodb.cursor()
-    c.execute("""
-        SELECT width, height, original_width, original_height
-           FROM gridimage_size
-           WHERE gridimage_id = ?
-        """, (gridimage_id,))
-    row = c.fetchone()
-    if row == None:
-        raise NotInGeographDatabase("Geograph ID %d not in database" %
-                                    (gridimage_id,))
-    gwidth, gheight, original_width, original_height = row
-    if original_width == 0:
-        raise NotEligible("No high-res version available")
-    bot.log("%dx%d version available" % (original_width, original_height))
-    fi = page.latest_file_info
-    bot.log("current Commons version is %dx%d" % (fi.width, fi.height))
-    if (fi.width, fi.height) != (gwidth, gheight):
-        raise NotEligible("dimensions do not match Geograph basic image")
-    geograph_info = get_geograph_info(gridimage_id)
-    if geograph_info['author_name'] != commons_author:
-        raise NotEligible("author does not match Geograph")
-    basic_image = get_geograph_basic(gridimage_id, geograph_info)
-    if hashlib.sha1(basic_image).hexdigest() != fi.sha1:
-        raise NotEligible("SHA-1 does not match Geograph basic image.")
-    bot.log("Image matches. Update possible.")
-    newimg = get_geograph_full(gridimage_id, geograph_info)
-    bot.log("Got %d bytes of image" % (len(newimg),))
-    tf = tempfile.NamedTemporaryFile()
-    tf.write(newimg)
-    bot.log("File written to %s" % (tf.name,))
-    page.upload(tf.name, comment="Higher-resolution version from Geograph.",
-                ignore_warnings=['exists'])
 
 class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
     def __init__(self, generator, **kwargs):
@@ -122,9 +72,59 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         super(UpgradeSizeBot, self).__init__(site=True, **kwargs)
         # assign the generator to the bot
         self.generator = generator
+    def process_page(self, page):
+        if not page.botMayEdit():
+            raise NotEligible("bot forbidden from editing this page")
+        templates = page.templatesWithParams()
+        geograph_templates = [t for t in templates if t[0] == geograph]
+        if len(geograph_templates) == 0:
+            raise NotEligible("no {{Geograph}} template")
+        if len(geograph_templates) > 1:
+            raise BadTemplate("%d {{Geograph}} templates" %
+                              (len(geograph_templates),))
+        try:
+            gridimage_id = int(geograph_templates[0][1][0])
+            commons_author = geograph_templates[0][1][1]
+        except ValueError:
+            raise BadTemplate("broken {{Geograph}} template")
+        except IndexError:
+            raise BadTemplate("broken {{Geograph}} template")
+        bot.log("Geograph ID is %d" % (gridimage_id,))
+        c = geodb.cursor()
+        c.execute("""
+            SELECT width, height, original_width, original_height
+               FROM gridimage_size
+               WHERE gridimage_id = ?
+            """, (gridimage_id,))
+        row = c.fetchone()
+        if row == None:
+            raise NotInGeographDatabase("Geograph ID %d not in database" %
+                                        (gridimage_id,))
+        gwidth, gheight, original_width, original_height = row
+        if original_width == 0:
+            raise NotEligible("No high-res version available")
+        bot.log("%dx%d version available" % (original_width, original_height))
+        fi = page.latest_file_info
+        bot.log("current Commons version is %dx%d" % (fi.width, fi.height))
+        if (fi.width, fi.height) != (gwidth, gheight):
+            raise NotEligible("dimensions do not match Geograph basic image")
+        geograph_info = get_geograph_info(gridimage_id)
+        if geograph_info['author_name'] != commons_author:
+            raise NotEligible("author does not match Geograph")
+        basic_image = get_geograph_basic(gridimage_id, geograph_info)
+        if hashlib.sha1(basic_image).hexdigest() != fi.sha1:
+            raise NotEligible("SHA-1 does not match Geograph basic image.")
+        bot.log("Image matches. Update possible.")
+        newimg = get_geograph_full(gridimage_id, geograph_info)
+        bot.log("Got %d bytes of image" % (len(newimg),))
+        tf = tempfile.NamedTemporaryFile()
+        tf.write(newimg)
+        bot.log("File written to %s" % (tf.name,))
+        page.upload(tf.name, comment="Higher-resolution version from Geograph.",
+                    ignore_warnings=['exists'])
     def treat_page(self):
         try:
-            process_page(self.current_page)
+            self.process_page(self.current_page)
         except NotEligible as e:
             bot.log(str(e))
         except MinorProblem as e:
