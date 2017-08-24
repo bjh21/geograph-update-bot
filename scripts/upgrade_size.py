@@ -11,6 +11,7 @@ import re
 import requests
 import sqlite3
 import tempfile
+from requests.exceptions import HTTPError
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 
@@ -127,6 +128,8 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         except MinorProblem as e:
             bot.warning(str(e))
         except MajorProblem as e:
+            bot.error(str(e))
+        except HTTPError as e:
             bot.error(str(e))
 
 def InterestingGeographGenerator(**kwargs):
