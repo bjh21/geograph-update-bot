@@ -12,6 +12,7 @@ import requests
 import sqlite3
 import tempfile
 from requests.exceptions import HTTPError
+from urllib.parse import urlencode
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 
@@ -36,15 +37,22 @@ def get_geograph_basic(gridimage_id, info):
 class StrangeURL(Exception):
     pass
 
-def get_geograph_full(gridimage_id, info):
+def get_geograph_full_url(gridimage_id, info):
     # Evil hack, but better than digging it out of HTML.
     m = re.search(r"_([0-9a-f]{8})\.jpg$", info['url'])
     if not m:
         raise StrangeURL(info['url'])
-    imgkey = m.groups(1)
-    r = client.get("http://www.geograph.org.uk/reuse.php",
-                     params={'id': gridimage_id, 'download': imgkey,
-                             'size': 'original'})
+    imgkey = m.group(1)
+    bot.log("imgkey is %s" % (repr(imgkey),))
+    return ("http://www.geograph.org.uk/reuse.php?" +
+            urlencode({'id': gridimage_id,
+                       'download': imgkey,
+                       'size': 'original'}))
+
+def get_geograph_full(gridimage_id, info):
+    url = get_geograph_full_url(gridimage_id, info)
+    bot.log("Fetching from %s" % (url,))
+    r = client.get(url)
     r.raise_for_status()
     return r.content
 
