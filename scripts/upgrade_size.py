@@ -12,10 +12,6 @@ import requests
 import sqlite3
 import tempfile
 
-site = pywikibot.Site()
-
-geograph = pywikibot.Page(site, "Template:Geograph")
-
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 
 client = requests.Session()
@@ -72,11 +68,12 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         super(UpgradeSizeBot, self).__init__(site=True, **kwargs)
         # assign the generator to the bot
         self.generator = generator
+        self.geograph = pywikibot.Page(self.site, "Template:Geograph")
     def process_page(self, page):
         if not page.botMayEdit():
             raise NotEligible("bot forbidden from editing this page")
         templates = page.templatesWithParams()
-        geograph_templates = [t for t in templates if t[0] == geograph]
+        geograph_templates = [t for t in templates if t[0] == self.geograph]
         if len(geograph_templates) == 0:
             raise NotEligible("no {{Geograph}} template")
         if len(geograph_templates) > 1:
@@ -133,9 +130,15 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             bot.error(str(e))
 
 def InterestingGeographGenerator(**kwargs):
+    site = kwargs['site']
+    # Fetch starting ID from a special page.
+    startpage = pywikibot.Page(site, 'User:Geograph Update Bot/last ID')
+    start = int(startpage.text)
+    startsortkeyprefix=" %08d" % (start,)
     for item in api.ListGenerator("categorymembers",
             cmtitle="Category:Images from the Geograph British Isles project",
-            cmprop="title|sortkeyprefix", cmtype="file", **kwargs):
+            cmprop="title|sortkeyprefix", cmtype="file",
+            cmstartsortkeyprefix=startsortkeyprefix, **kwargs):
         try:
             gridimage_id = int(item['sortkeyprefix'])
             c = geodb.cursor()
@@ -180,7 +183,7 @@ def main(*args):
     # pages from the wiki simultaneously.
     gen = genFactory.getCombinedGenerator(preload=True)
     if not gen:
-        gen = InterestingGeographGenerator()
+        gen = InterestingGeographGenerator(site=pywikibot.Site())
     if gen:
         # pass generator and private options to the bot
         bot = UpgradeSizeBot(gen, **options)
