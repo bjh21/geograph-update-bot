@@ -158,15 +158,11 @@ def InterestingGeographGenerator(**kwargs):
                     FROM gridimage_size
                     WHERE gridimage_id = ?
                 """, (gridimage_id,))
-            if c.rowcount == 0:
+            row = c.fetchone()
+            if row == None:
                 raise NotInGeographDatabase("Geograph ID %d not in database" %
                                             (gridimage_id,))
-            if c.rowcount > 1:
-                raise BadGeographDatabase(
-                    "Multiple database entries for Geograph ID %d" %
-                    (gridimage_id,))
-            (basic_width, basic_height,
-             original_width, original_height) = c.fetchone()
+            (basic_width, basic_height, original_width, original_height) = row
             if original_width == 0:
                 # No high-res version available.
                 continue
