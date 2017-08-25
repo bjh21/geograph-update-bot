@@ -21,8 +21,8 @@ client.headers['User-Agent'] = "upgrade_size (bjh21@bjh21.me.uk)"
 
 def get_geograph_info(gridimage_id):
     # Use the oEmbed API
-    r = client.get("http://api.geograph.org.uk/api/oembed",
-                     params={'url': 'http://www.geograph.org.uk/photo/%d' %
+    r = client.get("https://api.geograph.org.uk/api/oembed",
+                     params={'url': 'https://www.geograph.org.uk/photo/%d' %
                                     gridimage_id,
                              'format': 'json'})
     r.raise_for_status()
@@ -44,7 +44,7 @@ def get_geograph_full_url(gridimage_id, info):
         raise StrangeURL(info['url'])
     imgkey = m.group(1)
     bot.log("imgkey is %s" % (repr(imgkey),))
-    return ("http://www.geograph.org.uk/reuse.php?" +
+    return ("https://www.geograph.org.uk/reuse.php?" +
             urlencode({'id': gridimage_id,
                        'download': imgkey,
                        'size': 'original'}))
