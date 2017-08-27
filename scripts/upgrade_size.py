@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import division, print_function
 
 import hashlib
 import pywikibot
@@ -56,6 +56,12 @@ def get_geograph_full(gridimage_id, info):
     r.raise_for_status()
     return r.content
 
+def aspect_ratios_match(w0, h0, w1, h1):
+    # Treat aspect ratios as matching if they are within 1%
+    # (allowing for possible rotation).
+    return (0.99 < (w0/h0) / (w1/h1) < 1.01 or
+            0.99 < (w0/h0) / (h1/w1) < 1.01)
+
 class NotEligible(Exception):
     "This file is not eligible for resolution upgrade."
     pass
@@ -107,8 +113,9 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise NotInGeographDatabase("Geograph ID %d not in database" %
                                         (gridimage_id,))
         gwidth, gheight, original_width, original_height = row
-        if original_width == 0:
-            raise NotEligible("No high-res version available")
+        if not aspect_ratios_match(gwidth, gheight,
+                                   original_width, original_height):
+            raise NotEligible("aspect ratios of images differ")
         bot.log("%dx%d version available" % (original_width, original_height))
         fi = page.latest_file_info
         bot.log("current Commons version is %dx%d" % (fi.width, fi.height))
@@ -165,6 +172,9 @@ def InterestingGeographGenerator(**kwargs):
             (basic_width, basic_height, original_width, original_height) = row
             if original_width == 0:
                 # No high-res version available.
+                continue
+            if not aspect_ratios_match(basic_width, basic_height,
+                                       original_width, original_height):
                 continue
         except Exception:
             pass # Anything odd happens, yield the item for further inspection.
