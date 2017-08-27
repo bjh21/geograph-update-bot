@@ -13,6 +13,7 @@ import sqlite3
 import tempfile
 from requests.exceptions import HTTPError
 from urllib.parse import urlencode
+from compare import compare_revisions
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 
@@ -85,8 +86,12 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         self.generator = generator
         self.geograph = pywikibot.Page(self.site, "Template:Geograph")
     def process_page(self, page):
+        #compare_revisions(self.site, parameters=dict(titles=page.title()))
         if not page.botMayEdit():
             raise NotEligible("bot forbidden from editing this page")
+        for fi in page.get_file_history().values():
+            if fi.user == "Geograph Update Bot":
+                raise NotEligible("file already uploaded by me")
         templates = page.templatesWithParams()
         geograph_templates = [t for t in templates if t[0] == self.geograph]
         if len(geograph_templates) == 0:
