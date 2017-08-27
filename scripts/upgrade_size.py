@@ -121,9 +121,9 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if not aspect_ratios_match(gwidth, gheight,
                                    original_width, original_height):
             raise NotEligible("aspect ratios of images differ")
-        bot.log("%dx%d version available" % (original_width, original_height))
+        bot.log("%d × %d version available" % (original_width, original_height))
         fi = page.latest_file_info
-        bot.log("current Commons version is %dx%d" % (fi.width, fi.height))
+        bot.log("current Commons version is %d × %d" % (fi.width, fi.height))
         if (fi.width, fi.height) != (gwidth, gheight):
             raise NotEligible("dimensions do not match Geograph basic image")
         geograph_info = get_geograph_info(gridimage_id)
