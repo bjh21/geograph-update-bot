@@ -153,10 +153,10 @@ def InterestingGeographGenerator(**kwargs):
     startpage = pywikibot.Page(site, 'User:Geograph Update Bot/last ID')
     start = int(startpage.text)
     startsortkeyprefix=" %08d" % (start,)
-    for item in api.ListGenerator("categorymembers",
+    for item in api.ListGenerator("categorymembers", parameters=dict(
             cmtitle="Category:Images from the Geograph British Isles project",
             cmprop="title|sortkeyprefix", cmtype="file",
-            cmstartsortkeyprefix=startsortkeyprefix, **kwargs):
+            cmstartsortkeyprefix=startsortkeyprefix), **kwargs):
         try:
             gridimage_id = int(item['sortkeyprefix'])
             c = geodb.cursor()
