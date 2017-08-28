@@ -77,7 +77,6 @@ class MajorProblem(Exception):
 class BadGeographDatabase(MajorProblem):
     pass
 
-
 class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
     def __init__(self, generator, **kwargs):
         # call constructor of the super class
@@ -132,7 +131,14 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if hashlib.sha1(basic_image).hexdigest() != fi.sha1:
             raise NotEligible("SHA-1 does not match Geograph basic image.")
         bot.log("Image matches. Update possible.")
-        newimg = get_geograph_full(gridimage_id, geograph_info)
+        self.replace_file(page, get_geograph_full_url(gridimage_id,
+                                                      geograph_info))
+        compare_revisions(self.site, parameters=dict(titles=page.title()))
+    def replace_file(self, page, newurl):
+        bot.log("Fetching from %s" % (newurl,))
+        r = client.get(newurl)
+        r.raise_for_status()
+        newimg = r.content
         bot.log("Got %d bytes of image" % (len(newimg),))
         tf = tempfile.NamedTemporaryFile()
         tf.write(newimg)
@@ -140,7 +146,7 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         bot.log("File written to %s" % (tf.name,))
         page.upload(tf.name, comment="Higher-resolution version from Geograph.",
                     ignore_warnings=['exists'])
-        compare_revisions(self.site, parameters=dict(titles=page.title()))
+
     def treat_page(self):
         try:
             self.process_page(self.current_page)
