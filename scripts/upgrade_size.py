@@ -86,7 +86,6 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         self.generator = generator
         self.geograph = pywikibot.Page(self.site, "Template:Geograph")
     def process_page(self, page):
-        #compare_revisions(self.site, parameters=dict(titles=page.title()))
         if not page.botMayEdit():
             raise NotEligible("bot forbidden from editing this page")
         for fi in page.get_file_history().values():
@@ -137,9 +136,11 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         bot.log("Got %d bytes of image" % (len(newimg),))
         tf = tempfile.NamedTemporaryFile()
         tf.write(newimg)
+        tf.flush()
         bot.log("File written to %s" % (tf.name,))
         page.upload(tf.name, comment="Higher-resolution version from Geograph.",
                     ignore_warnings=['exists'])
+        compare_revisions(self.site, parameters=dict(titles=page.title()))
     def treat_page(self):
         try:
             self.process_page(self.current_page)
