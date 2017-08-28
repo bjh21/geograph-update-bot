@@ -135,6 +135,12 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                                                       geograph_info))
         compare_revisions(self.site, parameters=dict(titles=page.title()))
     def replace_file(self, page, newurl):
+        bot.log("Uploading from %s" % (newurl,))
+        page.upload(newurl, 
+                        comment="Higher-resolution version from Geograph.",
+                        ignore_warnings=['exists'])
+        return
+    def replace_file_indirect(self, page, newurl):
         bot.log("Fetching from %s" % (newurl,))
         r = client.get(newurl)
         r.raise_for_status()
