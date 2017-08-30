@@ -27,6 +27,13 @@ def compare_by_imageinfo(ii0, ii1):
     return compare_by_url(ii0['thumburl'], ii1['thumburl'],
                           ii0['thumbwidth'], ii0['thumbheight'])
 
+def mark_for_attention(site, title, comment):
+    bot.log("marking for human review")
+    page = pywikibot.Page(site, title)
+    page.text += "\n[[Category:Dubious uploads by Geograph Update Bot]]"
+    page.save("Marking last upload for human attention (%d)"
+              % (comment,))
+
 def compare_revisions(site, parameters):
     # Parameters should include titles= or generator=.
     # This function modifies it.
@@ -38,11 +45,10 @@ def compare_revisions(site, parameters):
     for info in gen:
         ii = info['imageinfo']
         if len(ii) < 2: continue
-        rmse = compare_by_imageinfo(ii[0], ii[1])
-        if rmse > 0.09:
-            bot.log("marking for human review")
-            page = pywikibot.Page(site, info['title'])
-            page.text += "\n[[Category:Dubious uploads by Geograph Update Bot]]"
-            page.save("Marking last upload for human attention (RMSE = %f)"
-                      % (rmse,))
-
+        try:
+            rmse = compare_by_imageinfo(ii[0], ii[1])
+        except Exception as e:
+            mark_for_attention(site, info['title'], str(e))
+        else:
+            if rmse > 0.09:
+                mark_for_attention(site, info['title'], "RMSE = %f" % (rmse,))
