@@ -31,7 +31,7 @@ def mark_for_attention(site, title, comment):
     bot.log("marking for human review")
     page = pywikibot.Page(site, title)
     page.text += "\n[[Category:Dubious uploads by Geograph Update Bot]]"
-    page.save("Marking last upload for human attention (%d)"
+    page.save("Marking last upload for human attention (%s)"
               % (comment,))
 
 def compare_revisions(site, parameters):
@@ -48,6 +48,7 @@ def compare_revisions(site, parameters):
         try:
             rmse = compare_by_imageinfo(ii[0], ii[1])
         except Exception as e:
+            bot.error(str(e))
             mark_for_attention(site, info['title'], str(e))
         else:
             if rmse > 0.09:
