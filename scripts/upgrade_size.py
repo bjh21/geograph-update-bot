@@ -136,9 +136,11 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         compare_revisions(self.site, parameters=dict(titles=page.title()))
     def replace_file(self, page, newurl):
         bot.log("Uploading from %s" % (newurl,))
-        page.upload(newurl, 
+        success = page.upload(newurl, 
                         comment="Higher-resolution version from Geograph.",
                         ignore_warnings=['exists'])
+        if not success:
+            bot.warning("upload from %s to %s failed" % (newurl, page))
         return
     def replace_file_indirect(self, page, newurl):
         bot.log("Fetching from %s" % (newurl,))
