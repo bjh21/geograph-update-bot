@@ -173,6 +173,7 @@ def InterestingGeographGenerator(**kwargs):
     startpage = pywikibot.Page(site, 'User:Geograph Update Bot/last ID')
     start = int(startpage.text)
     startsortkeyprefix=" %08d" % (start,)
+    n = 0
     for item in api.ListGenerator("categorymembers", parameters=dict(
             cmtitle="Category:Images from the Geograph British Isles project",
             cmprop="title|sortkeyprefix", cmtype="file",
@@ -199,6 +200,11 @@ def InterestingGeographGenerator(**kwargs):
         except Exception:
             pass # Anything odd happens, yield the item for further inspection.
         yield pywikibot.FilePage(site, item['title'])
+        n = n + 1;
+        if (n % 50 == 0):
+            # Write a checkpoint every fifty yeilded items
+            startpage.text = str(gridimage_id)
+            startpage.save("Checkpoint: up to %d" % (gridimage_id,))
     
 def main(*args):
     options = {}
