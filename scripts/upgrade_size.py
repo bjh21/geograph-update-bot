@@ -202,7 +202,7 @@ def InterestingGeographGenerator(**kwargs):
         yield pywikibot.FilePage(site, item['title'])
         n = n + 1;
         if (n % 50 == 0):
-            # Write a checkpoint every fifty yeilded items
+            # Write a checkpoint every fifty yielded items
             startpage.text = str(gridimage_id)
             startpage.save("Checkpoint: up to %d" % (gridimage_id,))
     
