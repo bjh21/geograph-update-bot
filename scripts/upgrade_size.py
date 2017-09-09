@@ -1,5 +1,6 @@
 from __future__ import division, print_function
 
+from itertools import zip_longest
 import hashlib
 import pywikibot
 from pywikibot.bot import (
@@ -167,6 +168,20 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         except HTTPError as e:
             bot.error(str(e))
 
+def merge_generators(*gens):
+    pendings = [{} for _ in gens]
+    for items in zip_longest(*gens):
+        for i, item in enumerate(items):
+            if item == None: continue
+            key = item['title']
+            pendings[i][key] = item
+            if all([key in pending for pending in pendings]):
+                ret = { }
+                for pending in pendings:
+                    ret.update(pending[key])
+                    del pending[key]
+                yield ret
+
 def InterestingGeographGenerator(**kwargs):
     site = kwargs['site']
     # Fetch starting ID from a special page.
@@ -174,10 +189,16 @@ def InterestingGeographGenerator(**kwargs):
     start = int(startpage.text)
     startsortkeyprefix=" %08d" % (start,)
     n = 0
-    for item in api.ListGenerator("categorymembers", parameters=dict(
+    g0 = api.ListGenerator("categorymembers", parameters=dict(
             cmtitle="Category:Images from the Geograph British Isles project",
             cmprop="title|sortkeyprefix", cmtype="file",
-            cmstartsortkeyprefix=startsortkeyprefix), **kwargs):
+            cmstartsortkeyprefix=startsortkeyprefix), **kwargs)
+    g1 = api.QueryGenerator(parameters=dict(
+        generator="categorymembers",
+        gcmtitle="Category:Images from the Geograph British Isles project",
+        gcmtype="file", gcmstartsortkeyprefix=startsortkeyprefix,
+        prop="imageinfo", iiprop="size", **kwargs))
+    for item in merge_generators(g0, g1):
         try:
             gridimage_id = int(item['sortkeyprefix'])
             c = geodb.cursor()
@@ -197,6 +218,11 @@ def InterestingGeographGenerator(**kwargs):
             if not aspect_ratios_match(basic_width, basic_height,
                                        original_width, original_height):
                 continue
+            ii = item['imageinfo'][0]
+            if ((ii['width'], ii['height']) ==
+                (original_width, original_height)):
+                # We already have the full-resolution version.
+                continue
         except Exception:
             pass # Anything odd happens, yield the item for further inspection.
         yield pywikibot.FilePage(site, item['title'])
@@ -205,7 +231,7 @@ def InterestingGeographGenerator(**kwargs):
             # Write a checkpoint every fifty yielded items
             startpage.text = str(gridimage_id)
             startpage.save("Checkpoint: up to %d" % (gridimage_id,))
-    
+
 def main(*args):
     options = {}
     # Process global arguments to determine desired site
