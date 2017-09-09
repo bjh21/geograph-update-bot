@@ -127,7 +127,9 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise NotEligible("dimensions do not match Geograph basic image")
         geograph_info = get_geograph_info(gridimage_id)
         if geograph_info['author_name'] != commons_author:
-            raise NotEligible("author does not match Geograph")
+            raise NotEligible("author does not match Geograph (%s vs. %s)" %
+                              (repr(commons_author),
+                               repr(geograph_info['author_name'])))
         basic_image = get_geograph_basic(gridimage_id, geograph_info)
         if hashlib.sha1(basic_image).hexdigest() != fi.sha1:
             raise NotEligible("SHA-1 does not match Geograph basic image.")
