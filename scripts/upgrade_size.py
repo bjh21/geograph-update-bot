@@ -199,7 +199,7 @@ def InterestingGeographGenerator(**kwargs):
         generator="categorymembers",
         gcmtitle="Category:Images from the Geograph British Isles project",
         gcmtype="file", gcmstartsortkeyprefix=startsortkeyprefix,
-        prop="imageinfo", iiprop="size", **kwargs))
+        prop="imageinfo", iiprop="size"), **kwargs)
     for item in merge_generators(g0, g1):
         try:
             gridimage_id = int(item['sortkeyprefix'])
