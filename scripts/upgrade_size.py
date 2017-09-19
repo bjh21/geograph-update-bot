@@ -64,6 +64,12 @@ def aspect_ratios_match(w0, h0, w1, h1):
     return (0.99 < (w0/h0) / (w1/h1) < 1.01 or
             0.99 < (w0/h0) / (h1/w1) < 1.01)
 
+def canonicalise_name(n):
+    n = re.sub("^ +", "", n) # Strip leading spaces.
+    n = re.sub(" +$", "", n) # Strip trailing spaces.
+    n = re.sub("  +", " ", n) # Compress multiple spaces
+    return n
+
 class NotEligible(Exception):
     "This file is not eligible for resolution upgrade."
     pass
@@ -126,7 +132,8 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if (fi.width, fi.height) != (gwidth, gheight):
             raise NotEligible("dimensions do not match Geograph basic image")
         geograph_info = get_geograph_info(gridimage_id)
-        if geograph_info['author_name'] != commons_author:
+        if (canonicalise_name(geograph_info['author_name']) !=
+            canonicalise_name(commons_author)):
             raise NotEligible("author does not match Geograph (%s vs. %s)" %
                               (repr(commons_author),
                                repr(geograph_info['author_name'])))
