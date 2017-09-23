@@ -114,7 +114,8 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         bot.log("Geograph ID is %d" % (gridimage_id,))
         c = geodb.cursor()
         c.execute("""
-            SELECT width, height, original_width, original_height
+            SELECT width, height, original_width, original_height,
+                   original_diff
                FROM gridimage_size
                WHERE gridimage_id = ?
             """, (gridimage_id,))
@@ -122,7 +123,9 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if row == None:
             raise NotInGeographDatabase("Geograph ID %d not in database" %
                                         (gridimage_id,))
-        gwidth, gheight, original_width, original_height = row
+        gwidth, gheight, original_width, original_height, original_diff = row
+        if original_diff == 'yes':
+            raise NotEligible("Geograph says pictures are different")
         if not aspect_ratios_match(gwidth, gheight,
                                    original_width, original_height):
             raise NotEligible("aspect ratios of images differ")
@@ -167,14 +170,19 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
 
     def treat_page(self):
         try:
+            gridimage_id = self.current_page.gridimage_id
             self.process_page(self.current_page)
         except NotEligible as e:
+            print("%d: %s" % (gridimage_id, str(e)), file=whynot)
             bot.log(str(e))
         except MinorProblem as e:
+            print("%d: %s" % (gridimage_id, str(e)), file=whynot)
             bot.warning(str(e))
         except MajorProblem as e:
+            print("%d: %s" % (gridimage_id, str(e)), file=whynot)
             bot.error(str(e))
         except HTTPError as e:
+            print("%d: %s" % (gridimage_id, str(e)), file=whynot)
             bot.error(str(e))
 
 def merge_generators(*gens):
@@ -222,19 +230,23 @@ def InterestingGeographGenerator(**kwargs):
                                             (gridimage_id,))
             (basic_width, basic_height, original_width, original_height) = row
             if original_width == 0:
-                # No high-res version available.
-                continue
+                raise NotEligible("no high-res version available")
             if not aspect_ratios_match(basic_width, basic_height,
                                        original_width, original_height):
-                continue
+                raise NotEligible("aspect ratios of images differ")
             ii = item['imageinfo'][0]
             if ((ii['width'], ii['height']) ==
                 (original_width, original_height)):
                 # We already have the full-resolution version.
-                continue
+                raise NotEligible("high-res version already uploaded")
+        except NotEligible as e:
+            print("%d: %s" % (gridimage_id, str(e)), file=whynot)
+            continue
         except Exception:
             pass # Anything odd happens, yield the item for further inspection.
-        yield pywikibot.FilePage(site, item['title'])
+        page = pywikibot.FilePage(site, item['title'])
+        page.gridimage_id = gridimage_id
+        yield page
         n = n + 1;
         if (n % 50 == 0):
             # Write a checkpoint every fifty yielded items
@@ -263,6 +275,8 @@ def main(*args):
     if not gen:
         gen = InterestingGeographGenerator(site=pywikibot.Site())
     if gen:
+        global whynot
+        whynot = open("whynot", "w")
         # pass generator and private options to the bot
         bot = UpgradeSizeBot(gen, **options)
         bot.run()  # guess what it does
@@ -270,4 +284,5 @@ def main(*args):
     else:
         pywikibot.bot.suggest_help(missing_generator=True)
         return False
+
 main()
