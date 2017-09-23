@@ -79,6 +79,8 @@ class BadTemplate(MinorProblem):
     pass
 class NotInGeographDatabase(MinorProblem):
     pass
+class UploadFailed(MinorProblem):
+    pass
 class MajorProblem(Exception):
     pass
 class BadGeographDatabase(MajorProblem):
@@ -153,7 +155,7 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                         comment="Higher-resolution version from Geograph.",
                         ignore_warnings=['exists'])
         if not success:
-            bot.warning("upload from %s to %s failed" % (newurl, page))
+            raise UploadFailed("upload from %s to %s failed" % (newurl, page))
         return
     def replace_file_indirect(self, page, newurl):
         bot.log("Fetching from %s" % (newurl,))
