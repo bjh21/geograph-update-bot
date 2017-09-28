@@ -225,6 +225,21 @@ def InterestingGeographsByNumber(**kwargs):
             startpage.text = str(gridimage_id)
             startpage.save("Checkpoint: up to %d" % (gridimage_id,))
 
+def InterestingGeographsByDate(**kwargs):
+    site = kwargs['site']
+    g0 = api.ListGenerator("categorymembers", parameters=dict(
+            cmtitle="Category:Images from the Geograph British Isles project",
+            cmprop="title|sortkeyprefix", cmtype="file",
+            cmsort="timestamp", cmdir="older",
+            ), **kwargs)
+    g1 = api.QueryGenerator(parameters=dict(
+        generator="categorymembers",
+        gcmtitle="Category:Images from the Geograph British Isles project",
+        gcmtype="file",
+        gcmsort="timestamp", gcmdir="older",
+        prop="imageinfo", iiprop="size"), **kwargs)
+    yield from InterestingGeographGenerator(site, g0, g1)
+
 def InterestingGeographGenerator(site, g0, g1):
     for item in merge_generators(g0, g1):
         try:
@@ -279,7 +294,7 @@ def main(*args):
     # pages from the wiki simultaneously.
     gen = genFactory.getCombinedGenerator(preload=True)
     if not gen:
-        gen = InterestingGeographsByNumber(site=pywikibot.Site())
+        gen = InterestingGeographsByDate(site=pywikibot.Site())
     if gen:
         global whynot
         whynot = open("whynot", "w")
