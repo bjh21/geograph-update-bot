@@ -201,7 +201,7 @@ def merge_generators(*gens):
                     del pending[key]
                 yield ret
 
-def InterestingGeographGenerator(**kwargs):
+def InterestingGeographsByNumber(**kwargs):
     site = kwargs['site']
     # Fetch starting ID from a special page.
     startpage = pywikibot.Page(site, 'User:Geograph Update Bot/last ID')
@@ -217,6 +217,15 @@ def InterestingGeographGenerator(**kwargs):
         gcmtitle="Category:Images from the Geograph British Isles project",
         gcmtype="file", gcmstartsortkeyprefix=startsortkeyprefix,
         prop="imageinfo", iiprop="size"), **kwargs)
+    for page in InterestingGeographGenerator(site, g0, g1):
+        yield page
+        n = n + 1;
+        if (n % 50 == 0):
+            # Write a checkpoint every fifty yielded items
+            startpage.text = str(gridimage_id)
+            startpage.save("Checkpoint: up to %d" % (gridimage_id,))
+
+def InterestingGeographGenerator(site, g0, g1):
     for item in merge_generators(g0, g1):
         try:
             gridimage_id = int(item['sortkeyprefix'])
@@ -249,12 +258,7 @@ def InterestingGeographGenerator(**kwargs):
         page = pywikibot.FilePage(site, item['title'])
         page.gridimage_id = gridimage_id
         yield page
-        n = n + 1;
-        if (n % 50 == 0):
-            # Write a checkpoint every fifty yielded items
-            startpage.text = str(gridimage_id)
-            startpage.save("Checkpoint: up to %d" % (gridimage_id,))
-
+        
 def main(*args):
     options = {}
     # Process global arguments to determine desired site
@@ -275,7 +279,7 @@ def main(*args):
     # pages from the wiki simultaneously.
     gen = genFactory.getCombinedGenerator(preload=True)
     if not gen:
-        gen = InterestingGeographGenerator(site=pywikibot.Site())
+        gen = InterestingGeographsByNumber(site=pywikibot.Site())
     if gen:
         global whynot
         whynot = open("whynot", "w")
