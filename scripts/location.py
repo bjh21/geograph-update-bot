@@ -69,7 +69,12 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     paramstr = "source:geograph"
     if view_direction != None:
         paramstr += "_heading:{}".format(view_direction)
-    return [latstr, lonstr, paramstr, "prec=" + precstr]
+    t = Template('Location')
+    t.add(1, latstr)
+    t.add(2, lonstr)
+    t.add(3, paramstr)
+    t.add('prec', precstr)
+    return t
 
 def location_from_row(row):
     # Row is assumed to be a database row.
@@ -91,5 +96,6 @@ def location_from_row(row):
     heading = int(row['view_direction'])
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
-    return Template(template, location_from_grid(grid, e, n, digits,
-                                                     heading, use6fig))
+    t = location_from_grid(grid, e, n, digits, heading, use6fig)
+    t.name = template
+    return t

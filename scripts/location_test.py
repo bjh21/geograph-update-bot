@@ -7,7 +7,7 @@ class FromGridTests(unittest.TestCase):
     def test_from_grid(self):
         a = location_from_grid(bng, 380980, 201340, 8, 292, True)
         self.assertEqual(a,
-            ['51.71051', '-2.2766', 'source:geograph_heading:292', 'prec=70'])
+            '{{Location|51.71051|-2.2766|source:geograph_heading:292|prec=70}}')
 
 class GridLetterTests(unittest.TestCase):
     def test_bng(self):
