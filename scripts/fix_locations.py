@@ -65,7 +65,10 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             lambda x: x.name == 'Location dec')
         bot.log("Existing location: %s" % location_templates[0])
         bot.log("Proposed location: %s" % location_from_row(row))
-                
+        tree.replace(location_templates[0], location_from_row(row))
+        page.text = str(tree)
+        print(page.text)
+
     def treat_page(self):
         try:
             self.process_page(self.current_page)
