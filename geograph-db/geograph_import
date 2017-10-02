@@ -3,6 +3,25 @@
 set -euo pipefail
 
 sqlite3 geograph.sqlite3 <<EOF
+  CREATE TABLE gridimage_base (
+    gridimage_id INTEGER PRIMARY KEY,
+    user_id,
+    realname,
+    title,
+    moderation_status,
+    imagetaken,
+    grid_reference,
+    x, y,
+    wgs84_lat, wgs84_long,
+    reference_index
+    );
+  CREATE TABLE gridimage_geo (
+    gridimage_id INTEGER PRIMARY KEY,
+    nateastings, natnorthings, natgrlen,
+    viewpoint_eastings, viewpoint_northings, viewpoint_grlen,
+    view_direction,
+    use6fig
+    );
   CREATE TABLE gridimage_size (
     gridimage_id INTEGER PRIMARY KEY,
     width INTEGER,
@@ -15,6 +34,8 @@ EOF
 
 {
   echo "BEGIN;"
-  gzip -dc gridimage_size.mysql | grep '^INSERT'
+  gzip -dc gridimage_base.mysql.gz | grep '^INSERT' | sed "s/\\\\'/''/g"
+  gzip -dc gridimage_geo.mysql.gz  | grep '^INSERT' | sed "s/\\\\'/''/g"
+  gzip -dc gridimage_size.mysql.gz | grep '^INSERT' | sed "s/\\\\'/''/g"
   echo "COMMIT;"
 } | sqlite3 -echo geograph.sqlite3
