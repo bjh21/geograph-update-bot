@@ -28,9 +28,11 @@ def en_from_gr(gr):
     # Convert a 4-figure grid reference to eastings and northings of
     # SW corner.
     if len(gr) == 6:
+        # British grid: two grid letters
         e = -1000000 + gridlettermap[gr[0]][0] * 500000
         n = -1100000 + gridlettermap[gr[0]][1] * 500000
     else:
+        # Irish grid: one grid letter
         assert(len(gr) == 5)
         e = 0
         n = -100000
@@ -83,7 +85,9 @@ def location_from_row(row):
         template = "Object location"
     else:
         # extract from grid_reference
-        assert(False)
+        e, n = en_from_gr(row['grid_reference'])
+        digits = int(row['natgrlen'])
+        template = "Object location"
     heading = int(row['view_direction'])
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
