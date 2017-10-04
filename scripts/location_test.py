@@ -1,19 +1,23 @@
 from __future__ import division, print_function, unicode_literals
 
 import unittest
-from location import bng, ig, location_from_grid, location_from_row, en_from_gr
+from location import (bng, ig, location_from_grid, location_from_row,
+                      en_from_gr, bngr_from_en)
 
 class FromGridTests(unittest.TestCase):
     def test_from_grid(self):
         a = location_from_grid(bng, 380980, 201340, 8, 292, True)
         self.assertEqual(a,
-            '{{Location|51.71051|-2.2766|source:geograph_heading:292|prec=70}}')
+            '{{Location|51.71051|-2.2766|'
+            'source:geograph-osgb36(SO80980134)_heading:292|prec=70}}')
 
 class GridLetterTests(unittest.TestCase):
     def test_bng(self):
         self.assertEqual(en_from_gr('SO8318'), (383000, 218000))
     def test_ig(self):
         self.assertEqual(en_from_gr('G6035'), (160000, 335000))
+    def test_bng_reverse(self):
+        self.assertEqual(bngr_from_en(380930, 201360, 6), "SO809013")
         
 class FromRowTests(unittest.TestCase):
     def setUp(self):
@@ -40,11 +44,13 @@ class FromRowTests(unittest.TestCase):
     def test_full_row(self):
         s = str(location_from_row(self.full_row))
         self.assertEqual(s,
-            "{{Location|51.71051|-2.2766|source:geograph_heading:292|prec=70}}")
+            "{{Location|51.71051|-2.2766|"
+            "source:geograph-osgb36(SO80980134)_heading:292|prec=70}}")
     def test_minimal_row(self):
         s = str(location_from_row(self.min_row))
         self.assertEqual(s,
-            "{{Object location|51.712|-2.25|source:geograph|prec=700}}")
+            "{{Object location|51.712|-2.25|"
+            "source:geograph-osgb36(SO8201)|prec=700}}")
     def test_medium_row(self):
         s = str(location_from_row(self.mid_row))
         self.assertEqual(s,
@@ -52,7 +58,8 @@ class FromRowTests(unittest.TestCase):
     def test_high_row(self):
         s = str(location_from_row(self.high_row))
         self.assertEqual(s,
-            "{{Location|52.372194|-2.22568|source:geograph|prec=0.7}}")
+            "{{Location|52.372194|-2.22568|"
+            "source:geograph-osgb36(SO8473274929)|prec=0.7}}")
         
 if __name__ == '__main__':
     unittest.main()

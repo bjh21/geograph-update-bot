@@ -42,6 +42,14 @@ def en_from_gr(gr):
     n += int(gr[-2:]) * 1000
     return (e, n)
 
+def bngr_from_en(e, n, digits):
+    e = int(e + 1000000)
+    n = int(n + 1100000)
+    return (gridletters[5-n//500000][e//500000] +
+            gridletters[5-n%500000//100000][e%500000//100000] +
+            "{:07d}".format(e)[2:int(2+digits//2)] + 
+            "{:07d}".format(n)[2:int(2+digits//2)])
+
 def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     # A grid reference in textual form, like SO8001, represents a
     # square on the ground whose size depends on the number of digits.
@@ -67,6 +75,8 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     # but if use6fig is set, our accuracy is less
     if use6fig: precstr = "70"
     paramstr = "source:geograph"
+    if grid == bng:
+        paramstr += "-osgb36({})".format(bngr_from_en(e, n, digits))
     if view_direction != None:
         paramstr += "_heading:{}".format(view_direction)
     t = Template('Location')

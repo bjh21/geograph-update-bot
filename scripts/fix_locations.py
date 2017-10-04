@@ -36,22 +36,29 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         super(FixLocationBot, self).__init__(site=True, **kwargs)
         # assign the generator to the bot
         self.generator = generator
-    def process_page(self, page):
-        tree = mwparserfromhell.parse(page.text)
-        geograph_templates = tree.filter_templates(matches=
-            lambda x: x.name == 'Geograph')
-        if len(geograph_templates) == 0:
-            raise NotEligible("no {{Geograph}} template")
-        if len(geograph_templates) > 1:
-            raise BadTemplate("%d {{Geograph}} templates" %
-                              (len(geograph_templates),))
+    def get_template(self, tree, templatename):
+        templates = tree.filter_templates(matches=
+                                          lambda x: x.name == templatename)
+        if len(templates) == 0:
+            raise NotEligible("no {{%s}} template" % (templatename,))
+        if len(templates) > 1:
+            raise BadTemplate("%d {{%s}} templates" %
+                              (len(templates), templatename))
+        return templates[0]
+    def gridimage_id_from_tree(self, tree):
+        geograph_template = self.get_template(tree, "Geograph")
         try:
-            gridimage_id = int(str(geograph_templates[0].get(1)))
+            gridimage_id = int(str(geograph_template.get(1)))
         except ValueError:
             raise BadTemplate("broken {{Geograph}} template")
         except IndexError:
             raise BadTemplate("broken {{Geograph}} template")
         bot.log("Geograph ID is %d" % (gridimage_id,))
+        return gridimage_id
+    def process_page(self, page):
+        bot.log(page.text)
+        tree = mwparserfromhell.parse(page.text)
+        gridimage_id = self.gridimage_id_from_tree(tree)
         c = geodb.cursor()
         c.execute("""
             SELECT * FROM gridimage_base NATURAL JOIN gridimage_geo
@@ -61,11 +68,19 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if row == None:
             raise NotInGeographDatabase("Geograph ID %d not in database" %
                                         (gridimage_id,))
-        location_templates = tree.filter_templates(matches=
-            lambda x: x.name == 'Location dec')
-        bot.log("Existing location: %s" % location_templates[0])
+        location_template = self.get_template(tree, "Location dec")
+        firstrev = page.oldest_revision.full_hist_entry()
+        if firstrev.user != 'GeographBot':
+            raise NotEligible("Not a GeographBot upload")
+        # Hmm.  Don't seem to get any text...
+        bot.log(firstrev)
+        first_tree = mwparserfromhell.parse(firstrev.text)
+        first_location = self.get_template(first_tree, "Location dec")
+        if location_template != first_location:
+            raise NotEligible("Location template changed since upload")
+        bot.log("Existing location: %s" % location_template)
         bot.log("Proposed location: %s" % location_from_row(row))
-        tree.replace(location_templates[0], location_from_row(row))
+        tree.replace(location_template, location_from_row(row))
         page.text = str(tree)
         print(page.text)
 
