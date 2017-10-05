@@ -244,6 +244,10 @@ def InterestingGeographGenerator(site, g0, g1):
     for item in merge_generators(g0, g1):
         try:
             gridimage_id = int(item['sortkeyprefix'])
+        except ValueError:
+            # Unparseable sort key.  Skip it.
+            continue
+        try:
             c = geodb.cursor()
             c.execute("""
                 SELECT width, height, original_width, original_height
