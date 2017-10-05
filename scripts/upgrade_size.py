@@ -209,12 +209,12 @@ def InterestingGeographsByNumber(**kwargs):
     startsortkeyprefix=" %08d" % (start,)
     n = 0
     g0 = api.ListGenerator("categorymembers", parameters=dict(
-            cmtitle="Category:Images from the Geograph British Isles project",
+            cmtitle="Category:Images from Geograph Britain and Ireland",
             cmprop="title|sortkeyprefix", cmtype="file",
             cmstartsortkeyprefix=startsortkeyprefix), **kwargs)
     g1 = api.QueryGenerator(parameters=dict(
         generator="categorymembers",
-        gcmtitle="Category:Images from the Geograph British Isles project",
+        gcmtitle="Category:Images from Geograph Britain and Ireland",
         gcmtype="file", gcmstartsortkeyprefix=startsortkeyprefix,
         prop="imageinfo", iiprop="size"), **kwargs)
     for page in InterestingGeographGenerator(site, g0, g1):
@@ -228,13 +228,13 @@ def InterestingGeographsByNumber(**kwargs):
 def InterestingGeographsByDate(**kwargs):
     site = kwargs['site']
     g0 = api.ListGenerator("categorymembers", parameters=dict(
-            cmtitle="Category:Images from the Geograph British Isles project",
+            cmtitle="Category:Images from Geograph Britain and Ireland",
             cmprop="title|sortkeyprefix", cmtype="file",
             cmsort="timestamp", cmdir="older",
             ), **kwargs)
     g1 = api.QueryGenerator(parameters=dict(
         generator="categorymembers",
-        gcmtitle="Category:Images from the Geograph British Isles project",
+        gcmtitle="Category:Images from Geograph Britain and Ireland",
         gcmtype="file",
         gcmsort="timestamp", gcmdir="older",
         prop="imageinfo", iiprop="size"), **kwargs)
