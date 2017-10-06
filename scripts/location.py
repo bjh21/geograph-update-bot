@@ -22,7 +22,7 @@ gridletters = [
 gridlettermap = { }
 for i, row in enumerate(gridletters):
     for j, letter in enumerate(row):
-        gridlettermap[letter] = (j, 5-i)
+        gridlettermap[letter] = (j, 4-i)
 
 def en_from_gr(gr):
     # Convert a 4-figure grid reference to eastings and northings of
@@ -30,12 +30,12 @@ def en_from_gr(gr):
     if len(gr) == 6:
         # British grid: two grid letters
         e = -1000000 + gridlettermap[gr[0]][0] * 500000
-        n = -1100000 + gridlettermap[gr[0]][1] * 500000
+        n =  -500000 + gridlettermap[gr[0]][1] * 500000
     else:
         # Irish grid: one grid letter
         assert(len(gr) == 5)
         e = 0
-        n = -100000
+        n = 0
     e += gridlettermap[gr[-5]][0] * 100000
     n += gridlettermap[gr[-5]][1] * 100000
     e += int(gr[-4:-2]) * 1000
@@ -44,11 +44,12 @@ def en_from_gr(gr):
 
 def bngr_from_en(e, n, digits):
     e = int(e + 1000000)
-    n = int(n + 1100000)
-    return (gridletters[5-n//500000][e//500000] +
-            gridletters[5-n%500000//100000][e%500000//100000] +
-            "{:07d}".format(e)[2:int(2+digits//2)] + 
-            "{:07d}".format(n)[2:int(2+digits//2)])
+    n = int(n +  500000)
+    letters = (gridletters[4-n//500000][e//500000] +
+               gridletters[4-n%500000//100000][e%500000//100000])
+    estr = "{:05d}".format(e%100000)[:int(digits//2)]
+    nstr = "{:05d}".format(n%100000)[:int(digits//2)]
+    return letters + estr + nstr
 
 def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     # A grid reference in textual form, like SO8001, represents a

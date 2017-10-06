@@ -56,7 +56,6 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         bot.log("Geograph ID is %d" % (gridimage_id,))
         return gridimage_id
     def process_page(self, page):
-        bot.log(page.text)
         tree = mwparserfromhell.parse(page.text)
         gridimage_id = self.gridimage_id_from_tree(tree)
         c = geodb.cursor()
@@ -72,9 +71,8 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         firstrev = page.oldest_revision.full_hist_entry()
         if firstrev.user != 'GeographBot':
             raise NotEligible("Not a GeographBot upload")
-        # Hmm.  Don't seem to get any text...
-        bot.log(firstrev)
-        first_tree = mwparserfromhell.parse(firstrev.text)
+        first_text = page.getOldVersion(firstrev.revid)
+        first_tree = mwparserfromhell.parse(first_text)
         first_location = self.get_template(first_tree, "Location dec")
         if location_template != first_location:
             raise NotEligible("Location template changed since upload")
@@ -82,7 +80,6 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         bot.log("Proposed location: %s" % location_from_row(row))
         tree.replace(location_template, location_from_row(row))
         page.text = str(tree)
-        print(page.text)
 
     def treat_page(self):
         try:
