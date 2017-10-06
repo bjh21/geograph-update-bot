@@ -31,6 +31,11 @@ class FromRowTests(unittest.TestCase):
             nateastings=0, natnorthings=0, natgrlen='4',
             viewpoint_eastings=0, viewpoint_northings=0,
             viewpoint_grlen='0', view_direction=-1, use6fig=0)
+        self.low_row = dict(gridimage_id=1803781,
+            grid_reference='NW1390', reference_index=1,
+            nateastings=0, natnorthings=0, natgrlen='4',
+            viewpoint_eastings=213000, viewpoint_northings=590000,
+            viewpoint_grlen='4', view_direction=225, use6fig=1)
         self.mid_row = dict(gridimage_id=2913,
             grid_reference='W2076', reference_index=2,
             nateastings=120800, natnorthings=76500, natgrlen='6',
@@ -51,6 +56,11 @@ class FromRowTests(unittest.TestCase):
         self.assertEqual(s,
             "{{Object location|51.712|-2.25|"
             "source:geograph-osgb36(SO8201)|prec=700}}")
+    def test_low_row(self):
+        s = str(location_from_row(self.low_row))
+        self.assertEqual(s,
+            "{{Location|55.174|-4.93|"
+            "source:geograph-osgb36(NX1390)_heading:225|prec=700}}")
     def test_medium_row(self):
         s = str(location_from_row(self.mid_row))
         self.assertEqual(s,
