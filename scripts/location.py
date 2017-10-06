@@ -81,9 +81,9 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     # true position falls is roughly 1/2*sqrt(2) times the width of
     # the square.  We approximate 1/2*sqrt(2) as 0.7.
     prec = 0.7 * square
+    # but if use6fig is set, our accuracy is less
     if use6fig: prec = max(prec, 70)
     precstr = "{:g}".format(prec)
-    # but if use6fig is set, our accuracy is less
     paramstr = "source:geograph"
     if grid == bng:
         paramstr += "-osgb36({})".format(bngr_from_en(e, n, digits))
