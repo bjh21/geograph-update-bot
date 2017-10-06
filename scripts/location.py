@@ -51,6 +51,14 @@ def bngr_from_en(e, n, digits):
     nstr = "{:05d}".format(n%100000)[:int(digits//2)]
     return letters + estr + nstr
 
+def igr_from_en(e, n, digits):
+    e = int(e)
+    n = int(n)
+    letter = gridletters[4-n//100000][e//100000]
+    estr = "{:05d}".format(e%100000)[:int(digits//2)]
+    nstr = "{:05d}".format(n%100000)[:int(digits//2)]
+    return letter + estr + nstr
+
 def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     # A grid reference in textual form, like SO8001, represents a
     # square on the ground whose size depends on the number of digits.
@@ -79,6 +87,8 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     paramstr = "source:geograph"
     if grid == bng:
         paramstr += "-osgb36({})".format(bngr_from_en(e, n, digits))
+    if grid == ig:
+        paramstr += "-irishgrid({})".format(igr_from_en(e, n, digits))
     if view_direction != None:
         paramstr += "_heading:{}".format(view_direction)
     t = Template('Location')

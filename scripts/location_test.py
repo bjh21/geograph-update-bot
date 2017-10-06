@@ -64,7 +64,8 @@ class FromRowTests(unittest.TestCase):
     def test_medium_row(self):
         s = str(location_from_row(self.mid_row))
         self.assertEqual(s,
-            "{{Object location|51.9360|-9.152|source:geograph|prec=70}}")
+            "{{Object location|51.9360|-9.152|"
+            "source:geograph-irishgrid(W208765)|prec=70}}")
     def test_high_row(self):
         s = str(location_from_row(self.high_row))
         self.assertEqual(s,
