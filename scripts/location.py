@@ -110,3 +110,13 @@ def location_from_row(row):
     t = location_from_grid(grid, e, n, digits, heading, use6fig)
     t.name = template
     return t
+
+# This is overkill, but since I've got pyproj lying around...
+geod = pyproj.Geod(ellps='WGS84')
+def distance_between_locations(loc1, loc2):
+    lat1 = float(str(loc1.get(1)))
+    lat2 = float(str(loc2.get(1)))
+    lon1 = float(str(loc1.get(2)))
+    lon2 = float(str(loc2.get(2)))
+    az12, az21, dist = geod.inv(lon1, lat1, lon2, lat2)
+    return dist

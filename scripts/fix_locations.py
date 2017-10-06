@@ -9,7 +9,7 @@ import pywikibot.pagegenerators
 import mwparserfromhell
 import re
 import sqlite3
-from location import location_from_row
+from location import location_from_row, distance_between_locations
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
@@ -77,7 +77,9 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if location_template != first_location:
             raise NotEligible("Location template changed since upload")
         bot.log("Existing location: %s" % location_template)
-        bot.log("Proposed location: %s" % location_from_row(row))
+        new_location = location_from_row(row)
+        bot.log("Proposed location: %s" % (new_location,))
+        bot.log("Distance moved: %.1f m" % (distance_between_locations(location_template, new_location),))
         tree.replace(location_template, location_from_row(row))
         page.text = str(tree)
 
