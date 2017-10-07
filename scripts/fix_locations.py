@@ -68,14 +68,6 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise NotInGeographDatabase("Geograph ID %d not in database" %
                                         (gridimage_id,))
         location_template = self.get_template(tree, "Location dec")
-        firstrev = page.oldest_revision.full_hist_entry()
-        if firstrev.user != 'GeographBot':
-            raise NotEligible("Not a GeographBot upload")
-        first_text = page.getOldVersion(firstrev.revid)
-        first_tree = mwparserfromhell.parse(first_text)
-        first_location = self.get_template(first_tree, "Location dec")
-        if location_template != first_location:
-            raise NotEligible("Location template changed since upload")
         bot.log("Existing location: %s" % location_template)
         new_location = location_from_row(row)
         bot.log("Proposed location: %s" % (new_location,))
@@ -84,6 +76,14 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if (distance < float(str(new_location.get('prec').value)) and
             new_location.name != 'Object location'):
             raise NotEligible("Change too small to matter")
+        firstrev = page.oldest_revision.full_hist_entry()
+        if firstrev.user != 'GeographBot':
+            raise NotEligible("Not a GeographBot upload")
+        first_text = page.getOldVersion(firstrev.revid)
+        first_tree = mwparserfromhell.parse(first_text)
+        first_location = self.get_template(first_tree, "Location dec")
+        if location_template != first_location:
+            raise NotEligible("Location template changed since upload")
         tree.replace(location_template, location_from_row(row))
         page.text = str(tree)
         page.save("Update location from Geograph (%s)" %
