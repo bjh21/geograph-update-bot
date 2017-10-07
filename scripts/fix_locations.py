@@ -79,7 +79,11 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         bot.log("Existing location: %s" % location_template)
         new_location = location_from_row(row)
         bot.log("Proposed location: %s" % (new_location,))
-        bot.log("Distance moved: %.1f m" % (distance_between_locations(location_template, new_location),))
+        distance = distance_between_locations(location_template, new_location)
+        bot.log("Distance moved: %.1f m" % (distance,))
+        if (distance < float(str(new_location.get('prec').value)) and
+            new_location.name != 'Object location'):
+            raise NotEligible("Change too small to matter")
         tree.replace(location_template, location_from_row(row))
         page.text = str(tree)
 
