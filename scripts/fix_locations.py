@@ -15,7 +15,6 @@ geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
 
 class NotEligible(Exception):
-    "This file is not eligible for resolution upgrade."
     pass
 class MinorProblem(Exception):
     pass
