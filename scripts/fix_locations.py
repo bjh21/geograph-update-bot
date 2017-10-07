@@ -9,7 +9,7 @@ import pywikibot.pagegenerators
 import mwparserfromhell
 import re
 import sqlite3
-from location import location_from_row, distance_between_locations
+from location import location_from_row, distance_between_locations, format_row
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
@@ -86,6 +86,8 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise NotEligible("Change too small to matter")
         tree.replace(location_template, location_from_row(row))
         page.text = str(tree)
+        page.save("Update location from Geograph (%s)" %
+                  (format_row(row),))
 
     def treat_page(self):
         try:
