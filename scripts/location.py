@@ -129,3 +129,26 @@ def distance_between_locations(loc1, loc2):
     lon2 = float(str(loc2.get(2)))
     az12, az21, dist = geod.inv(lon1, lat1, lon2, lat2)
     return dist
+
+def format_row(row):
+    # Format a database row for use in an edit summary.
+    ret = "subject "
+    if row['reference_index'] == 1:
+        fmtref = bngr_from_en
+    else:
+        fmtref = igr_from_en
+    if row['natgrlen'] == '4':
+        ret += row['grid_reference']
+    else:
+        ret += fmtref(row['nateastings'], row['natnorthings'],
+                      int(row['natgrlen']))
+    if row['viewpoint_grlen'] != '0':
+        ret += "; viewpoint " + fmtref(row['viewpoint_eastings'],
+                                       row['viewpoint_northings'],
+                                       int(row['viewpoint_grlen']))
+    if row['view_direction'] != -1:
+        ret += "; {}°".format(row['view_direction'])
+    if row['use6fig'] and (int(row['natgrlen']) > 4 or
+                           int(row['viewpoint_grlen']) > 4):
+        ret += "; use6fig"
+    return ret
