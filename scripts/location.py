@@ -112,7 +112,11 @@ def location_from_row(row):
         # extract from grid_reference
         e, n = en_from_gr(row['grid_reference'])
         digits = int(row['natgrlen'])
-        template = "Object location"
+        if row['moderation_status'] == 'geograph':
+            # Subject and viewpoint must be in same square for Geograph status.
+            template = "Location"
+        else:
+            template = "Object location"
     heading = int(row['view_direction'])
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
@@ -151,4 +155,6 @@ def format_row(row):
     if row['use6fig'] and (int(row['natgrlen']) > 4 or
                            int(row['viewpoint_grlen']) > 4):
         ret += "; use6fig"
+    if row['moderation_status'] == 'geograph':
+        ret += "; geograph"
     return ret
