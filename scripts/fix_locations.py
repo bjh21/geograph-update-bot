@@ -85,8 +85,9 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise NotEligible("Location template changed since upload")
         tree.replace(location_template, location_from_row(row))
         page.text = str(tree)
-        page.save("Update location from Geograph (%s)" %
-                  (format_row(row),))
+        page.save("Replace [[User:GeographBot|GeographBot]]-derived location "
+                  "with current one from Geograph (%s; moved %.1f m)" %
+                  (format_row(row), distance), minor=False)
 
     def treat_page(self):
         try:
