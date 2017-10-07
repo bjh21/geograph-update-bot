@@ -76,13 +76,11 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     # and 5dp is enough in longitude.
     latstr = "{{:.{}f}}".format(digits//2 + 1).format(lat)
     lonstr = "{{:.{}f}}".format(digits//2).format(lon)
-    # Since each grid reference describes a square, and we've
-    # converted its centre, the radius of the circle within which the
-    # true position falls is roughly 1/2*sqrt(2) times the width of
-    # the square.  We approximate 1/2*sqrt(2) as 0.7.
-    prec = 0.7 * square
+    # The "prec=" parameter doesn't seem to be well-defined, so we
+    # just put the size of a grid square in it.
+    prec = square
     # but if use6fig is set, our accuracy is less
-    if use6fig: prec = max(prec, 70)
+    if use6fig: prec = max(prec, 100)
     precstr = "{:g}".format(prec)
     paramstr = "source:geograph"
     if grid == bng:
