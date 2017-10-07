@@ -113,7 +113,10 @@ def location_from_row(row):
         e, n = en_from_gr(row['grid_reference'])
         digits = int(row['natgrlen'])
         if row['moderation_status'] == 'geograph':
-            # Subject and viewpoint must be in same square for Geograph status.
+            # Subject and viewpoint must be in same square for
+            # Geograph status.  Before late 2007, they could be
+            # different, but then the gridsquare actually located the
+            # camera, not necessarily the subject.
             template = "Location"
         else:
             template = "Object location"
