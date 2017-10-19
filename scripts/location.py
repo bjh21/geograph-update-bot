@@ -120,6 +120,12 @@ def location_from_row(row):
             template = "Location"
         else:
             template = "Object location"
+    # The Geograph view direction is probably specified in grid space
+    # rather than as a true heading.  Happily, the difference in the
+    # second-worst place (Soay) is only 5°, which isn't really
+    # significant when the direction is only specified with 23°
+    # precision.  At Rockall, the difference is 10°, but none of the
+    # photos of Rockall on Geograph has a view direction set anyway.
     heading = int(row['view_direction'])
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
