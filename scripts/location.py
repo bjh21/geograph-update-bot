@@ -154,10 +154,15 @@ def format_row(row):
                                        row['viewpoint_northings'],
                                        int(row['viewpoint_grlen']))
     if row['view_direction'] != -1:
-        ret += "; {}°".format(row['view_direction'])
+        ret += "; looking {}".format(format_direction(row['view_direction']))
     if row['use6fig'] and (int(row['natgrlen']) > 4 or
                            int(row['viewpoint_grlen']) > 4):
         ret += "; use6fig"
     if row['moderation_status'] == 'geograph':
         ret += "; geograph"
     return ret
+
+def format_direction(dir):
+    dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+            'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N']
+    return dirs[int(round(dir / 22.5))]

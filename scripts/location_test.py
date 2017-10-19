@@ -58,7 +58,8 @@ class FromRowTests(unittest.TestCase):
             "source:geograph-osgb36(SO80980134)_heading:292|prec=100}}")
         f = format_row(self.full_row)
         self.assertEqual(f,
-            "subject SO80930136; viewpoint SO80980134; 292°; use6fig; geograph")
+            "subject SO80930136; viewpoint SO80980134; looking WNW; "
+                         "use6fig; geograph")
     def test_minimal_row(self):
         s = str(location_from_row(self.min_row))
         self.assertEqual(s,
@@ -66,7 +67,8 @@ class FromRowTests(unittest.TestCase):
             "source:geograph-osgb36(SO8201)|prec=1000}}")
         f = format_row(self.full_row)
         self.assertEqual(f,
-            "subject SO80930136; viewpoint SO80980134; 292°; use6fig; geograph")
+            "subject SO80930136; viewpoint SO80980134; looking WNW; "
+                         "use6fig; geograph")
     def test_low_row(self):
         s = str(location_from_row(self.low_row))
         self.assertEqual(s,
@@ -74,7 +76,7 @@ class FromRowTests(unittest.TestCase):
             "source:geograph-osgb36(NX1390)_heading:225|prec=1000}}")
         f = format_row(self.low_row)
         self.assertEqual(f,
-            "subject NX1390; viewpoint NX1390; 225°; geograph")
+            "subject NX1390; viewpoint NX1390; looking SW; geograph")
     def test_medium_row(self):
         s = str(location_from_row(self.mid_row))
         self.assertEqual(s,
