@@ -9,7 +9,8 @@ import pywikibot.pagegenerators
 import mwparserfromhell
 import re
 import sqlite3
-from location import location_from_row, distance_between_locations, format_row
+from location import (location_from_row, az_dist_between_locations, format_row,
+                      format_direction)
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
@@ -70,11 +71,13 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         bot.log("Existing location: %s" % location_template)
         new_location = location_from_row(row)
         bot.log("Proposed location: %s" % (new_location,))
-        distance = distance_between_locations(location_template, new_location)
+        azon, azno, distance = (
+            az_dist_between_locations(location_template, new_location))
         bot.log("Distance moved: %.1f m" % (distance,))
+        minor = False
         if (distance < float(str(new_location.get('prec').value)) and
             new_location.name != 'Object location'):
-            raise NotEligible("Change too small to matter")
+            minor = True
         firstrev = page.oldest_revision.full_hist_entry()
         if firstrev.user != 'GeographBot':
             raise NotEligible("Not a GeographBot upload")
@@ -85,9 +88,11 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise NotEligible("Location template changed since upload")
         tree.replace(location_template, location_from_row(row))
         page.text = str(tree)
-        page.save("Replace [[User:GeographBot|GeographBot]]-derived location "
-                  "with current one from Geograph (%s; moved %.1f m)" %
-                  (format_row(row), distance), minor=False)
+        summary = ("Replace [[User:GeographBot|GeographBot]]-derived location "
+                   "with current one from Geograph (%s; moved %.1f m %s)" %
+                   (format_row(row), distance, format_direction(azon)))
+        bot.log("edit summary: %s" % (summary,))
+        page.save(summary, minor=minor)
 
     def treat_page(self):
         try:
