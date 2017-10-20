@@ -2,7 +2,7 @@
 
 from __future__ import division, print_function, unicode_literals
 import sqlite3
-from location import location_from_row
+from location import location_from_row, object_location_from_row
 import sys
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
@@ -20,5 +20,6 @@ def main():
             raise NotInGeographDatabase("Geograph ID %d not in database" %
                                         (gridimage_id,))
         print(location_from_row(row))
-
+        print(object_location_from_row(row))
+        
 main()
