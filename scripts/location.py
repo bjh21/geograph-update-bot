@@ -108,7 +108,7 @@ def location_from_row(row):
         # close to) the target square.  This only applies to images
         # moderated as Geographs.
         e, n = en_from_gr(row['grid_reference'])
-        digits = int(row['natgrlen'])
+        digits = 4
     else:
         return None
     # The Geograph view direction is probably specified in grid space
@@ -130,6 +130,8 @@ def object_location_from_row(row):
     # https://www.geograph.org.uk/article/Which-Square
     #
     # In practice, though, the best we can do is to assume that it is.
+    grids = { 1: bng, 2: ig }
+    grid = grids[row['reference_index']]
     if row['natgrlen'] in ('6', '8', '10'):
         e, n, digits = (row['nateastings'], row['natnorthings'],
                         int(row['natgrlen']))
