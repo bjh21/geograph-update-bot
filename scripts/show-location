@@ -19,7 +19,9 @@ def main():
         if row == None:
             raise NotInGeographDatabase("Geograph ID %d not in database" %
                                         (gridimage_id,))
-        print(location_from_row(row))
-        print(object_location_from_row(row))
+        l = location_from_row(row)
+        if l: print(l)
+        ol = object_location_from_row(row)
+        if ol: print(ol)
         
 main()
