@@ -103,7 +103,12 @@ def location_from_row(row):
     if row['viewpoint_grlen'] != '0':
         e, n, digits = (row['viewpoint_eastings'], row['viewpoint_northings'],
                         int(row['viewpoint_grlen']))
-        template = "Location"
+    elif row['moderation_status'] == 'geograph':
+        # Geograph rules say that the photographer must be in (or very
+        # close to) the target square.  This only applies to images
+        # moderated as Geographs.
+        e, n = en_from_gr(row['grid_reference'])
+        digits = int(row['natgrlen'])
     else:
         return None
     # The Geograph view direction is probably specified in grid space
@@ -116,24 +121,26 @@ def location_from_row(row):
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
     t = location_from_grid(grid, e, n, digits, heading, use6fig)
-    t.name = template
     return t
 
 def object_location_from_row(row):
+    # The "subject location" in Geograph isn't necessarily the main
+    # subject of the image:
+    #
+    # https://www.geograph.org.uk/article/Which-Square
+    #
+    # In practice, though, the best we can do is to assume that it is.
     if row['natgrlen'] in ('6', '8', '10'):
         e, n, digits = (row['nateastings'], row['natnorthings'],
                         int(row['natgrlen']))
-        template = "Object location"
     else:
-        # extract from grid_reference
         e, n = en_from_gr(row['grid_reference'])
         digits = int(row['natgrlen'])
-        template = "Object location"
     heading = int(row['view_direction'])
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
     t = location_from_grid(grid, e, n, digits, heading, use6fig)
-    t.name = template
+    t.name = "Object location"
     return t
 
 # This is overkill, but since I've got pyproj lying around...
