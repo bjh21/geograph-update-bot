@@ -104,7 +104,23 @@ def location_from_row(row):
         e, n, digits = (row['viewpoint_eastings'], row['viewpoint_northings'],
                         int(row['viewpoint_grlen']))
         template = "Location"
-    elif row['natgrlen'] in ('6', '8', '10'):
+    else:
+        return None
+    # The Geograph view direction is probably specified in grid space
+    # rather than as a true heading.  Happily, the difference in the
+    # second-worst place (Soay) is only 5°, which isn't really
+    # significant when the direction is only specified with 23°
+    # precision.  At Rockall, the difference is 10°, but none of the
+    # photos of Rockall on Geograph has a view direction set anyway.
+    heading = int(row['view_direction'])
+    if heading == -1: heading = None
+    use6fig = bool(row['use6fig'])
+    t = location_from_grid(grid, e, n, digits, heading, use6fig)
+    t.name = template
+    return t
+
+def object_location_from_row(row):
+    if row['natgrlen'] in ('6', '8', '10'):
         e, n, digits = (row['nateastings'], row['natnorthings'],
                         int(row['natgrlen']))
         template = "Object location"
@@ -112,20 +128,7 @@ def location_from_row(row):
         # extract from grid_reference
         e, n = en_from_gr(row['grid_reference'])
         digits = int(row['natgrlen'])
-        if row['moderation_status'] == 'geograph':
-            # Subject and viewpoint must be in same square for
-            # Geograph status.  Before late 2007, they could be
-            # different, but then the gridsquare actually located the
-            # camera, not necessarily the subject.
-            template = "Location"
-        else:
-            template = "Object location"
-    # The Geograph view direction is probably specified in grid space
-    # rather than as a true heading.  Happily, the difference in the
-    # second-worst place (Soay) is only 5°, which isn't really
-    # significant when the direction is only specified with 23°
-    # precision.  At Rockall, the difference is 10°, but none of the
-    # photos of Rockall on Geograph has a view direction set anyway.
+        template = "Object location"
     heading = int(row['view_direction'])
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
