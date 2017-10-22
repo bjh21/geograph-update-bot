@@ -3,6 +3,8 @@ from __future__ import division, print_function, unicode_literals
 import pyproj
 
 from mwparserfromhell.nodes.template import Template
+from mwparserfromhell.nodes.text import Text
+from mwparserfromhell.wikicode import Wikicode
 
 # Geograph Britain and Ireland uses the British National Grid in Great
 # Britain and the Irish Grid in Ireland.
@@ -227,14 +229,14 @@ def replace_templates(tree, new, matchfn):
 
 def insert_template_after(tree, new, matchfn):
     olds = tree.filter_templates(matches=matchfn)
-    tree.insert_after(olds[0], new)
+    tree.insert_after(olds[0], Wikicode([Text("\n"), new]))
 
 def insert_template_before(tree, new, matchfn):
     olds = tree.filter_templates(matches=matchfn)
-    tree.insert_before(olds[0], new)
+    tree.insert_before(olds[0], Wikicode([new, Text("\n")]))
 
 def insert_template_at_start(tree, new):
-    tree.insert(0, new)
+    tree.insert(0, Wikicode([new, Text("\n")]))
 
 def set_location(tree, loc):
     try:

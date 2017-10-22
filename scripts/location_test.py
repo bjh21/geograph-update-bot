@@ -118,7 +118,7 @@ class EditingTest1(unittest.TestCase):
         loc = Template('Object location')
         loc.add(1, "one")
         set_object_location(self.tree, loc)
-        self.assertEqual(str(self.tree), "{{Information}}\n{{location dec}}{{Object location|one}}")
+        self.assertEqual(str(self.tree), "{{Information}}\n{{location dec}}\n{{Object location|one}}")
 
 class EditingTest2(unittest.TestCase):
     def setUp(self):
@@ -127,7 +127,7 @@ class EditingTest2(unittest.TestCase):
         loc = Template('Location')
         loc.add(1, "one")
         set_location(self.tree, loc)
-        self.assertEqual(str(self.tree), "{{Location|one}}{{object location}}")
+        self.assertEqual(str(self.tree), "{{Location|one}}\n{{object location}}")
     def test_objloc(self):
         loc = Template('Object location')
         loc.add(1, "one")
