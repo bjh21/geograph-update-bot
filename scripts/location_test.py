@@ -3,7 +3,10 @@ from __future__ import division, print_function, unicode_literals
 import unittest
 from location import (bng, ig, location_from_grid, location_from_row,
                       object_location_from_row,
-                      en_from_gr, bngr_from_en, format_row)
+                      en_from_gr, bngr_from_en, format_row,
+                      set_location, set_object_location)
+import mwparserfromhell
+from mwparserfromhell.nodes.template import Template
 
 class FromGridTests(unittest.TestCase):
     def test_from_grid(self):
@@ -103,5 +106,33 @@ class FromRowTests(unittest.TestCase):
         self.assertEqual(f,
             "subject SY8379")
 
+class EditingTest1(unittest.TestCase):
+    def setUp(self):
+        self.tree = mwparserfromhell.parse("{{Information}}\n{{location dec}}")
+    def test_loc(self):
+        loc = Template('Location')
+        loc.add(1, "one")
+        set_location(self.tree, loc)
+        self.assertEqual(str(self.tree), "{{Information}}\n{{Location|one}}")
+    def test_objloc(self):
+        loc = Template('Object location')
+        loc.add(1, "one")
+        set_object_location(self.tree, loc)
+        self.assertEqual(str(self.tree), "{{Information}}\n{{location dec}}{{Object location|one}}")
+
+class EditingTest2(unittest.TestCase):
+    def setUp(self):
+        self.tree = mwparserfromhell.parse("{{object location}}")
+    def test_loc(self):
+        loc = Template('Location')
+        loc.add(1, "one")
+        set_location(self.tree, loc)
+        self.assertEqual(str(self.tree), "{{Location|one}}{{object location}}")
+    def test_objloc(self):
+        loc = Template('Object location')
+        loc.add(1, "one")
+        set_object_location(self.tree, loc)
+        self.assertEqual(str(self.tree), "{{Object location|one}}")
+        
 if __name__ == '__main__':
     unittest.main()

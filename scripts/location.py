@@ -184,3 +184,78 @@ def format_direction(dir):
     dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
             'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N']
     return dirs[int(round(dir / 22.5))]
+
+# Known aliases of {{Location}}
+loctps = ("Location", "Location dec", "Location dms", "Camera Location",
+          "Koordynaty", "Camera location", "Camera location dec",
+          "Location Dec", "Locationdec", "Locationdms")
+def tpmatch(a, b):
+    return a[0].upper() + a[1:] == b[0].upper() + b[1:]
+
+def isloctp(t):
+    for x in loctps:
+        if tpmatch(t.name, x): return True
+    return False
+
+# Known aliases of {{Object Location}}
+objtps = ("Object location", "Object location dec", "Object Location",
+          "Object Location dec")
+
+def isobjtp(t):
+    for x in objtps:
+        if tpmatch(t.name, x): return True
+    return False
+
+# Known infobox templates
+# https://commons.wikimedia.org/wiki/Commons:Infobox_templates
+infoboxes = ("Information", "Artwork", "Photograph", "Art photo", "Book",
+             "Map", "Musical work", "Information2", "COAInformation",
+             "Bus-Information", "Infobox aircraft image", "Spoken article",
+             "Specimen")
+def isinfobox(t):
+    for x in infoboxes:
+        if tpmatch(t.name, x): return True
+    return False
+
+# Remove all matching templates and replace the first of them with the
+# new one.
+def replace_templates(tree, new, matchfn):
+    olds = tree.filter_templates(matches=matchfn)
+    tree.replace(olds[0], new)
+    for o in olds[1:]:
+        tree.remove(o)
+
+def insert_template_after(tree, new, matchfn):
+    olds = tree.filter_templates(matches=matchfn)
+    tree.insert_after(olds[0], new)
+
+def insert_template_before(tree, new, matchfn):
+    olds = tree.filter_templates(matches=matchfn)
+    tree.insert_before(olds[0], new)
+
+def insert_template_at_start(tree, new):
+    tree.insert(0, new)
+
+def set_location(tree, loc):
+    try:
+        replace_templates(tree, loc, isloctp)
+    except IndexError:
+        try:
+            insert_template_before(tree, loc, isobjtp)
+        except IndexError:
+            try:
+                insert_template_after(tree, loc, isinfobox)
+            except IndexError:
+                insert_template_at_start(tree, loc)
+
+def set_object_location(tree, oloc):
+    try:
+        replace_templates(tree, oloc, isobjtp)
+    except IndexError:
+        try:
+            insert_template_after(tree, oloc, isloctp)
+        except IndexError:
+            try:
+                insert_template_after(tree, oloc, isinfobox)
+            except IndexError:
+                insert_template_at_start(tree, loc)
