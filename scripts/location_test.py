@@ -2,6 +2,7 @@ from __future__ import division, print_function, unicode_literals
 
 import unittest
 from location import (bng, ig, location_from_grid, location_from_row,
+                      object_location_from_row,
                       en_from_gr, bngr_from_en, format_row)
 
 class FromGridTests(unittest.TestCase):
@@ -78,7 +79,7 @@ class FromRowTests(unittest.TestCase):
         self.assertEqual(f,
             "subject NX1390; viewpoint NX1390; looking SW; geograph")
     def test_medium_row(self):
-        s = str(location_from_row(self.mid_row))
+        s = str(object_location_from_row(self.mid_row))
         self.assertEqual(s,
             "{{Object location|51.9360|-9.152|"
             "source:geograph-irishgrid(W208765)|prec=100}}")
@@ -94,7 +95,7 @@ class FromRowTests(unittest.TestCase):
         self.assertEqual(f,
             "subject SO8474; viewpoint SO8473274929; geograph")
     def test_high_row(self):
-        s = str(location_from_row(self.supp_row))
+        s = str(object_location_from_row(self.supp_row))
         self.assertEqual(s,
             "{{Object location|50.615|-2.23|"
                          "source:geograph-osgb36(SY8379)|prec=1000}}")
