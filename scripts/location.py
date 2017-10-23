@@ -6,6 +6,8 @@ from mwparserfromhell.nodes.template import Template
 from mwparserfromhell.nodes.text import Text
 from mwparserfromhell.wikicode import Wikicode
 
+from gubutil import tlgetall, tlgetone
+
 # Geograph Britain and Ireland uses the British National Grid in Great
 # Britain and the Irish Grid in Ireland.
 
@@ -188,25 +190,13 @@ def format_direction(dir):
     return dirs[int(round(dir / 22.5))]
 
 # Known aliases of {{Location}}
-loctps = ("Location", "Location dec", "Location dms", "Camera Location",
+loctls = ("Location", "Location dec", "Location dms", "Camera Location",
           "Koordynaty", "Camera location", "Camera location dec",
           "Location Dec", "Locationdec", "Locationdms")
-def tpmatch(a, b):
-    return a[0].upper() + a[1:] == b[0].upper() + b[1:]
-
-def isloctp(t):
-    for x in loctps:
-        if tpmatch(t.name, x): return True
-    return False
 
 # Known aliases of {{Object Location}}
-objtps = ("Object location", "Object location dec", "Object Location",
+objtls = ("Object location", "Object location dec", "Object Location",
           "Object Location dec")
-
-def isobjtp(t):
-    for x in objtps:
-        if tpmatch(t.name, x): return True
-    return False
 
 # Known infobox templates
 # https://commons.wikimedia.org/wiki/Commons:Infobox_templates
@@ -221,43 +211,57 @@ def isinfobox(t):
 
 # Remove all matching templates and replace the first of them with the
 # new one.
-def replace_templates(tree, new, matchfn):
-    olds = tree.filter_templates(matches=matchfn)
+def replace_templates(tree, new, names):
+    olds = tlgetall(tree, names)
     tree.replace(olds[0], new)
     for o in olds[1:]:
         tree.remove(o)
 
-def insert_template_after(tree, new, matchfn):
-    olds = tree.filter_templates(matches=matchfn)
+def insert_template_after(tree, new, names):
+    olds = tlgetall(tree, names)
     tree.insert_after(olds[0], Wikicode([Text("\n"), new]))
 
-def insert_template_before(tree, new, matchfn):
-    olds = tree.filter_templates(matches=matchfn)
+def insert_template_before(tree, new, names):
+    olds = tlgetall(tree, names)
     tree.insert_before(olds[0], Wikicode([new, Text("\n")]))
 
 def insert_template_at_start(tree, new):
     tree.insert(0, Wikicode([new, Text("\n")]))
 
+def get_location(tree):
+    return tlgetone(tree, loctls)
+
 def set_location(tree, loc):
+    if loc == None:
+        for tl in tlgetall(tree, loctls):
+            tree.remove(tl)
+        return
     try:
-        replace_templates(tree, loc, isloctp)
+        replace_templates(tree, loc, loctls)
     except IndexError:
         try:
-            insert_template_before(tree, loc, isobjtp)
+            insert_template_before(tree, loc, objtls)
         except IndexError:
             try:
-                insert_template_after(tree, loc, isinfobox)
+                insert_template_after(tree, loc, infoboxes)
             except IndexError:
                 insert_template_at_start(tree, loc)
 
+def has_object_location(tree):
+    return len(tlgetall(tree, objtls)) > 0
+                
 def set_object_location(tree, oloc):
+    if oloc == None:
+        for tl in tlgetall(tree, objtls):
+            tree.remove(tl)
+        return
     try:
-        replace_templates(tree, oloc, isobjtp)
+        replace_templates(tree, oloc, objtls)
     except IndexError:
         try:
-            insert_template_after(tree, oloc, isloctp)
+            insert_template_after(tree, oloc, loctls)
         except IndexError:
             try:
-                insert_template_after(tree, oloc, isinfobox)
+                insert_template_after(tree, oloc, infoboxes)
             except IndexError:
-                insert_template_at_start(tree, loc)
+                insert_template_at_start(tree, oloc)
