@@ -2,6 +2,7 @@ from __future__ import division, print_function, unicode_literals
 
 import pyproj
 
+import mwparserfromhell
 from mwparserfromhell.nodes.template import Template
 from mwparserfromhell.nodes.text import Text
 from mwparserfromhell.wikicode import Wikicode
@@ -93,7 +94,7 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig):
         paramstr += "-irishgrid({})".format(igr_from_en(e, n, digits))
     if view_direction != None:
         paramstr += "_heading:{}".format(view_direction)
-    t = Template('Location')
+    t = Template(mwparserfromhell.parse('Location'))
     t.add(1, latstr)
     t.add(2, lonstr)
     t.add(3, paramstr)
@@ -146,7 +147,7 @@ def object_location_from_row(row):
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
     t = location_from_grid(grid, e, n, digits, heading, use6fig)
-    t.name = "Object location"
+    t.name = mwparserfromhell.parse("Object location")
     return t
 
 # This is overkill, but since I've got pyproj lying around...

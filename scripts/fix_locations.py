@@ -9,8 +9,12 @@ import pywikibot.pagegenerators
 import mwparserfromhell
 import re
 import sqlite3
-from location import (location_from_row, az_dist_between_locations, format_row,
-                      format_direction)
+from location import (location_from_row, object_location_from_row,
+                      az_dist_between_locations, format_row,
+                      format_direction, get_location, has_object_location,
+                      set_location, set_object_location)
+
+from gubutil import get_gridimage_id
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
@@ -55,9 +59,20 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise BadTemplate("broken {{Geograph}} template")
         bot.log("Geograph ID is %d" % (gridimage_id,))
         return gridimage_id
+    def is_original_location(self, page, location_template):
+        firstrev = page.oldest_revision.full_hist_entry()
+        if firstrev.user != 'GeographBot':
+            raise NotEligible("Not a GeographBot upload")
+        first_text = page.getOldVersion(firstrev.revid)
+        first_tree = mwparserfromhell.parse(first_text)
+        first_location = get_location(first_tree)
+        return location_template == first_location
     def process_page(self, page):
+        location_replaced = False
+        location_removed = False
+        object_location_added = False
         tree = mwparserfromhell.parse(page.text)
-        gridimage_id = self.gridimage_id_from_tree(tree)
+        gridimage_id = get_gridimage_id(tree)
         c = geodb.cursor()
         c.execute("""
             SELECT * FROM gridimage_base NATURAL JOIN gridimage_geo
@@ -67,32 +82,65 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if row == None:
             raise NotInGeographDatabase("Geograph ID %d not in database" %
                                         (gridimage_id,))
-        location_template = self.get_template(tree, "Location dec")
-        bot.log("Existing location: %s" % location_template)
+        location_template = get_location(tree)
         new_location = location_from_row(row)
-        bot.log("Proposed location: %s" % (new_location,))
-        azon, azno, distance = (
-            az_dist_between_locations(location_template, new_location))
-        bot.log("Distance moved: %.1f m" % (distance,))
-        minor = False
-        if (distance < float(str(new_location.get('prec').value)) and
-            new_location.name != 'Object location'):
-            minor = True
-        firstrev = page.oldest_revision.full_hist_entry()
-        if firstrev.user != 'GeographBot':
-            raise NotEligible("Not a GeographBot upload")
-        first_text = page.getOldVersion(firstrev.revid)
-        first_tree = mwparserfromhell.parse(first_text)
-        first_location = self.get_template(first_tree, "Location dec")
-        if location_template != first_location:
-            raise NotEligible("Location template changed since upload")
-        tree.replace(location_template, location_from_row(row))
-        page.text = str(tree)
-        summary = ("Replace [[User:GeographBot|GeographBot]]-derived location "
-                   "with current one from Geograph (%s; moved %.1f m %s)" %
-                   (format_row(row), distance, format_direction(azon)))
-        bot.log("edit summary: %s" % (summary,))
-        page.save(summary, minor=minor)
+        minor = True
+        bot.log("Existing location: %s" % (location_template,))
+        if (self.is_original_location(page, location_template) and
+            new_location != location_template):
+            bot.log("Proposed location: %s" % (new_location,))
+            set_location(tree, new_location)
+            if new_location != None:
+                azon, azno, distance = (
+                    az_dist_between_locations(location_template, new_location))
+                bot.log("Distance moved: %.1f m" % (distance,))
+                if distance > float(str(new_location.get('prec').value)):
+                    minor = False
+                location_replaced = True
+            else:
+                minor = False
+                location_removed = True
+        if not has_object_location(tree):
+            objloc = object_location_from_row(row)
+            bot.log("New object location: %s" % (objloc,))
+            set_object_location(tree, objloc)
+            minor = False
+            object_location_added = True
+        newtext = str(tree)
+        if newtext != page.text:
+            page.text = newtext
+            if location_replaced:
+                if object_location_added:
+                    summary = (
+                        "Replace dubious [[User:GeographBot|GeographBot]]-"
+                        "sourced camera location (moved %.1f m %s) and "
+                        "add object location, both from Geograph (%s)" %
+                        (distance, format_direction(azon), format_row(row)))
+                else:
+                    summary = (
+                        "Replace dubious [[User:GeographBot|GeographBot]]-"
+                        "sourced camera location (moved %.1f m %s), "
+                        "from Geograph (%s)" %
+                        (distance, format_direction(azon), format_row(row)))
+            elif location_removed:
+                if object_location_added:
+                    summary = (
+                        "Remove dubious [[User:GeographBot|GeographBot]]-"
+                        "sourced camera location and "
+                        "add object location, both from Geograph (%s)" %
+                        (format_row(row),))
+                else:
+                    summary = (
+                        "Remove dubious [[User:GeographBot|GeographBot]]-"
+                        "sourced camera location")
+            elif object_location_added:
+                summary = (
+                    "Add object location from Geograph (%s)" %
+                    (format_row(row),))
+            else:
+                assert(False) # no change made!
+            bot.log("edit summary: %s" % (summary,))
+            page.save(summary, minor=minor)
 
     def treat_page(self):
         try:
