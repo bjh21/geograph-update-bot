@@ -127,7 +127,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     summary = (
                         "Remove dubious [[User:GeographBot|GeographBot]]-"
                         "sourced camera location and "
-                        "add object location, both from Geograph (%s)" %
+                        "add object location from Geograph (%s)" %
                         (format_row(row),))
                 else:
                     summary = (
