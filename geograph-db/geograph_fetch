@@ -1,0 +1,7 @@
+#! /bin/bash
+
+set -euo pipefail
+
+wget 'http://data.geograph.org.uk/dumps/gridimage_base.mysql.gz'
+wget 'http://data.geograph.org.uk/dumps/gridimage_geo.mysql.gz'
+wget 'http://data.geograph.org.uk/dumps/gridimage_size.mysql.gz'
