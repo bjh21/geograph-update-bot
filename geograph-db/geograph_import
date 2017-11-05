@@ -5,16 +5,31 @@ set -euo pipefail
 sqlite3 geograph.sqlite3 <<EOF
   CREATE TABLE gridimage_base (
     gridimage_id INTEGER PRIMARY KEY,
-    user_id,
+    user_id INTEGER,
     realname,
     title,
     moderation_status,
     imagetaken,
     grid_reference,
-    x, y,
-    wgs84_lat, wgs84_long,
-    reference_index
+    x INTEGER, y INTEGER,
+    wgs84_lat FLOAT, wgs84_long FLOAT,
+    reference_index INTEGER
     );
+EOF
+if [ -f gridimage_base.mysql.gz ]; then
+    {
+	echo "BEGIN;"
+	gzip -dc gridimage_base.mysql.gz | grep '^INSERT' | sed "s/\\\\'/''/g"
+	echo "COMMIT;"
+    } | sqlite3 -echo geograph.sqlite3
+elif [ -f  gridimage_base.tsv.gz ]; then
+    gzip -dc gridimage_base.tsv.gz | sed '1d;s/"/\\"/g' |
+	sqlite3 geograph.sqlite3 ".mode tabs" ".import /dev/stdin gridimage_base"
+fi
+
+exit 0
+
+sqlite3 geograph.sqlite3 <<EOF
   CREATE TABLE gridimage_geo (
     gridimage_id INTEGER PRIMARY KEY,
     nateastings, natnorthings, natgrlen,
@@ -22,6 +37,16 @@ sqlite3 geograph.sqlite3 <<EOF
     view_direction,
     use6fig
     );
+EOF
+if [ -f gridimage_geo.mysql.gz ]; then
+    {
+	echo "BEGIN;"
+	gzip -dc gridimage_geo.mysql.gz  | grep '^INSERT' | sed "s/\\\\'/''/g"
+	echo "COMMIT;"
+    } | sqlite3 -echo geograph.sqlite3
+fi
+
+sqlite3 geograph.sqlite3 <<EOF
   CREATE TABLE gridimage_size (
     gridimage_id INTEGER PRIMARY KEY,
     width INTEGER,
@@ -32,10 +57,10 @@ sqlite3 geograph.sqlite3 <<EOF
     );
 EOF
 
-{
-  echo "BEGIN;"
-  gzip -dc gridimage_base.mysql.gz | grep '^INSERT' | sed "s/\\\\'/''/g"
-  gzip -dc gridimage_geo.mysql.gz  | grep '^INSERT' | sed "s/\\\\'/''/g"
-  gzip -dc gridimage_size.mysql.gz | grep '^INSERT' | sed "s/\\\\'/''/g"
-  echo "COMMIT;"
-} | sqlite3 -echo geograph.sqlite3
+if [ -f gridimage_size.mysql.gz ]; then
+    {
+	echo "BEGIN;"
+	gzip -dc gridimage_size.mysql.gz | grep '^INSERT' | sed "s/\\\\'/''/g"
+	echo "COMMIT;"
+    } | sqlite3 -echo geograph.sqlite3
+fi
