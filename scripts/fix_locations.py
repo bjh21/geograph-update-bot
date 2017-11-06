@@ -90,6 +90,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         minor = True
         bot.log("Existing location: %s" % (location_template,))
         if (location_template != None and
+            location_template.name == 'Location dec' and
             self.is_original_location(page, location_template) and
             new_location != location_template):
             bot.log("Proposed location: %s" % (new_location,))
