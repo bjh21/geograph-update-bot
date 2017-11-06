@@ -5,6 +5,8 @@ from functools import partial
 # Template searching functions.
 
 def titlematch(a, b):
+    a = a.strip()
+    b = b.strip()
     return a[0].upper() + a[1:] == b[0].upper() + b[1:]
 
 def titlein(a, bs):

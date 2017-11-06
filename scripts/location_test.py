@@ -133,6 +133,54 @@ class EditingTest2(unittest.TestCase):
         loc.add(1, "one")
         set_object_location(self.tree, loc)
         self.assertEqual(str(self.tree), "{{Object location|one}}")
-        
+
+class EditingTest3(unittest.TestCase):
+    def setUp(self):
+        self.tree = mwparserfromhell.parse(
+"""
+== {{int:filedesc}} ==
+{{Information
+|description={{en|1=Street Waste Bin Waste bin on the street outside Crosby and Blundellsands Station}}
+|date=2010-04-11
+|source=From [http://www.geograph.org.uk/photo/1801330 geograph.org.uk]
+|author=[http://www.geograph.org.uk/profile/46411 Paul Glover]
+|permission=
+|other_versions=
+}}
+{{Location dec|53.487763|-3.040917}}
+
+== {{int:license-header}} ==
+{{Geograph|1801330|Paul Glover}}
+
+[[Category:Streets in Sefton]]
+[[Category:Geograph images in Merseyside]]
+""")
+    def test_loc_objloc(self):
+        loc = Template('Object location')
+        loc.add(1, "one")
+        set_location(self.tree, None)
+        set_object_location(self.tree, loc)
+        # Might be better without the spurious newline, but this will do.
+        self.assertEqual(str(self.tree),
+"""
+== {{int:filedesc}} ==
+{{Information
+|description={{en|1=Street Waste Bin Waste bin on the street outside Crosby and Blundellsands Station}}
+|date=2010-04-11
+|source=From [http://www.geograph.org.uk/photo/1801330 geograph.org.uk]
+|author=[http://www.geograph.org.uk/profile/46411 Paul Glover]
+|permission=
+|other_versions=
+}}
+{{Object location|one}}
+
+
+== {{int:license-header}} ==
+{{Geograph|1801330|Paul Glover}}
+
+[[Category:Streets in Sefton]]
+[[Category:Geograph images in Merseyside]]
+""")
+
 if __name__ == '__main__':
     unittest.main()
