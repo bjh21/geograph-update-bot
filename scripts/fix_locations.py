@@ -82,11 +82,15 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if row == None:
             raise NotInGeographDatabase("Geograph ID %d not in database" %
                                         (gridimage_id,))
-        location_template = get_location(tree)
+        try:
+            location_template = get_location(tree)
+        except IndexError:
+            location_template = None
         new_location = location_from_row(row)
         minor = True
         bot.log("Existing location: %s" % (location_template,))
-        if (self.is_original_location(page, location_template) and
+        if (location_template != None and
+            self.is_original_location(page, location_template) and
             new_location != location_template):
             bot.log("Proposed location: %s" % (new_location,))
             set_location(tree, new_location)
