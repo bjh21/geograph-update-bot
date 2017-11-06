@@ -14,7 +14,7 @@ from location import (location_from_row, object_location_from_row,
                       format_direction, get_location, has_object_location,
                       set_location, set_object_location)
 
-from gubutil import get_gridimage_id
+from gubutil import get_gridimage_id, TooManyTemplates
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
@@ -155,6 +155,8 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         except MinorProblem as e:
             bot.warning(str(e))
         except MajorProblem as e:
+            bot.error(str(e))
+        except TooManyTemplates as e:
             bot.error(str(e))
 
 def InterestingGeographsByNumber(**kwargs):
