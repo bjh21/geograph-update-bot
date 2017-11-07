@@ -6,13 +6,13 @@ sqlite3 geograph.sqlite3 <<EOF
   CREATE TABLE gridimage_base (
     gridimage_id INTEGER PRIMARY KEY,
     user_id INTEGER,
-    realname,
-    title,
-    moderation_status,
-    imagetaken,
-    grid_reference,
+    realname TEXT,
+    title TEXT,
+    moderation_status TEXT,
+    imagetaken TEXT,
+    grid_reference TEXT,
     x INTEGER, y INTEGER,
-    wgs84_lat FLOAT, wgs84_long FLOAT,
+    wgs84_lat REAL, wgs84_long REAL,
     reference_index INTEGER
     );
 EOF
@@ -30,10 +30,11 @@ fi
 sqlite3 geograph.sqlite3 <<EOF
   CREATE TABLE gridimage_geo (
     gridimage_id INTEGER PRIMARY KEY,
-    nateastings, natnorthings, natgrlen,
-    viewpoint_eastings, viewpoint_northings, viewpoint_grlen,
-    view_direction,
-    use6fig
+    nateastings INTEGER, natnorthings INTEGER, natgrlen TEXT,
+    viewpoint_eastings INTEGER, viewpoint_northings TEXT,
+    viewpoint_grlen INTEGER,
+    view_direction INTEGER,
+    use6fig INTEGER
     );
 EOF
 if [ -f gridimage_geo.mysql.gz ]; then
@@ -54,7 +55,7 @@ sqlite3 geograph.sqlite3 <<EOF
     height INTEGER,
     original_width INTEGER,
     original_height INTEGER,
-    original_diff
+    original_diff TEXT
     );
 EOF
 
