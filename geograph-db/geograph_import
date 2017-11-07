@@ -21,7 +21,7 @@ if [ -f gridimage_base.mysql.gz ]; then
 	echo "BEGIN;"
 	gzip -dc gridimage_base.mysql.gz | { grep -a '^INSERT' || true; } | sed "s/\\\\'/''/g"
 	echo "COMMIT;"
-    } | sqlite3 -echo geograph.sqlite3
+    } | sqlite3 geograph.sqlite3
 elif [ -f  gridimage_base.tsv.gz ]; then
     gzip -dc gridimage_base.tsv.gz | sed '1d;s/"/\\"/g' |
 	sqlite3 geograph.sqlite3 ".mode tabs" ".import /dev/stdin gridimage_base"
@@ -41,7 +41,10 @@ if [ -f gridimage_geo.mysql.gz ]; then
 	echo "BEGIN;"
 	gzip -dc gridimage_geo.mysql.gz  | { grep -a '^INSERT' || true; } | sed "s/\\\\'/''/g"
 	echo "COMMIT;"
-    } | sqlite3 -echo geograph.sqlite3
+    } | sqlite3 geograph.sqlite3
+elif [ -f  gridimage_geo.tsv.gz ]; then
+    gzip -dc gridimage_geo.tsv.gz | sed '1d;s/"/\\"/g' |
+	sqlite3 geograph.sqlite3 ".mode tabs" ".import /dev/stdin gridimage_geo"
 fi
 
 sqlite3 geograph.sqlite3 <<EOF
@@ -60,5 +63,8 @@ if [ -f gridimage_size.mysql.gz ]; then
 	echo "BEGIN;"
 	gzip -dc gridimage_size.mysql.gz | { grep -a '^INSERT' || true; } | sed "s/\\\\'/''/g"
 	echo "COMMIT;"
-    } | sqlite3 -echo geograph.sqlite3
+    } | sqlite3 geograph.sqlite3
+elif [ -f  gridimage_size.tsv.gz ]; then
+    gzip -dc gridimage_size.tsv.gz | sed '1d;s/"/\\"/g' |
+	sqlite3 geograph.sqlite3 ".mode tabs" ".import /dev/stdin gridimage_size"
 fi
