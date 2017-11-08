@@ -20,6 +20,7 @@ if [ -f gridimage_base.mysql.gz ]; then
     {
 	echo "BEGIN;"
 	gzip -dc gridimage_base.mysql.gz | { grep -a '^INSERT' || true; } | sed "s/\\\\'/''/g"
+	echo "UPDATE gridimage_base SET title = NULL;"
 	echo "COMMIT;"
     } | sqlite3 geograph.sqlite3
 elif [ -f  gridimage_base.tsv.gz ]; then
