@@ -66,7 +66,17 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         first_text = page.getOldVersion(firstrev.revid)
         first_tree = mwparserfromhell.parse(first_text)
         first_location = get_location(first_tree)
-        return location_template == first_location
+        if location_template == first_location:
+            bot.log("Location identical to original")
+            return True
+        lat = float(str(first_location.get(1)))
+        lon = float(str(first_location.get(2)))
+        first_location.add(1, "%.4f" % (lat,))
+        first_location.add(2, "%.4f" % (lon,))
+        if location_template == first_location:
+            bot.log("Location matches rounded original")
+            return True        
+        return False
     def process_page(self, page):
         location_replaced = False
         location_removed = False
