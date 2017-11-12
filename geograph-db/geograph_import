@@ -1,72 +1,57 @@
-#! /bin/bash
+#! /usr/bin/python3
 
-set -euo pipefail
+import gzip
+import sqlite3
 
-sqlite3 geograph.sqlite3 <<EOF
-  CREATE TABLE gridimage_base (
-    gridimage_id INTEGER PRIMARY KEY,
-    user_id INTEGER,
-    realname TEXT,
-    title TEXT,
-    moderation_status TEXT,
-    imagetaken TEXT,
-    grid_reference TEXT,
-    x INTEGER, y INTEGER,
-    wgs84_lat REAL, wgs84_long REAL,
-    reference_index INTEGER
-    );
-EOF
-if [ -f gridimage_base.mysql.gz ]; then
-    {
-	echo "BEGIN;"
-	gzip -dc gridimage_base.mysql.gz | { grep -a '^INSERT' || true; } | sed "s/\\\\'/''/g"
-	echo "UPDATE gridimage_base SET title = NULL;"
-	echo "COMMIT;"
-    } | sqlite3 geograph.sqlite3
-elif [ -f  gridimage_base.tsv.gz ]; then
-    gzip -dc gridimage_base.tsv.gz | sed '1d;s/"/\\"/g' |
-	sqlite3 geograph.sqlite3 ".mode tabs" ".import /dev/stdin gridimage_base"
-fi
+def parse_line(line):
+    return line.rstrip("\n").split("\t")
 
-sqlite3 geograph.sqlite3 <<EOF
-  CREATE TABLE gridimage_geo (
-    gridimage_id INTEGER PRIMARY KEY,
-    nateastings INTEGER, natnorthings INTEGER, natgrlen TEXT,
-    viewpoint_eastings INTEGER, viewpoint_northings TEXT,
-    viewpoint_grlen INTEGER,
-    view_direction INTEGER,
-    use6fig INTEGER
-    );
-EOF
-if [ -f gridimage_geo.mysql.gz ]; then
-    {
-	echo "BEGIN;"
-	gzip -dc gridimage_geo.mysql.gz  | { grep -a '^INSERT' || true; } | sed "s/\\\\'/''/g"
-	echo "COMMIT;"
-    } | sqlite3 geograph.sqlite3
-elif [ -f  gridimage_geo.tsv.gz ]; then
-    gzip -dc gridimage_geo.tsv.gz | sed '1d;s/"/\\"/g' |
-	sqlite3 geograph.sqlite3 ".mode tabs" ".import /dev/stdin gridimage_geo"
-fi
+def parse_line_base(line):
+    raw_fields = parse_line(line)
+    return raw_fields[0:3] + ["\t".join(raw_fields[3:-8])] + raw_fields[-8:]
 
-sqlite3 geograph.sqlite3 <<EOF
-  CREATE TABLE gridimage_size (
-    gridimage_id INTEGER PRIMARY KEY,
-    width INTEGER,
-    height INTEGER,
-    original_width INTEGER,
-    original_height INTEGER,
-    original_diff TEXT
-    );
-EOF
+def import_table(db, tablename, parser):
+    filename = tablename + ".tsv.gz"
+    with gzip.open(filename, mode='rt', encoding='cp1252') as tsvfile:
+        # Read and discard heading line.
+        heading = parser(tsvfile.readline())
+        placeholders = ",".join(['?'] * len(heading))
+        stmt = "INSERT INTO {} VALUES ({})".format(tablename, placeholders)
+        db.executemany(stmt, map(parser, tsvfile))
 
-if [ -f gridimage_size.mysql.gz ]; then
-    {
-	echo "BEGIN;"
-	gzip -dc gridimage_size.mysql.gz | { grep -a '^INSERT' || true; } | sed "s/\\\\'/''/g"
-	echo "COMMIT;"
-    } | sqlite3 geograph.sqlite3
-elif [ -f  gridimage_size.tsv.gz ]; then
-    gzip -dc gridimage_size.tsv.gz | sed '1d;s/"/\\"/g' |
-	sqlite3 geograph.sqlite3 ".mode tabs" ".import /dev/stdin gridimage_size"
-fi
+with sqlite3.connect("geograph.sqlite3") as db:
+    db.execute("""
+      CREATE TABLE gridimage_base (
+        gridimage_id INTEGER PRIMARY KEY,
+        user_id INTEGER,
+        realname TEXT,
+        title TEXT,
+        moderation_status TEXT,
+        imagetaken TEXT,
+        grid_reference TEXT,
+        x INTEGER, y INTEGER,
+        wgs84_lat REAL, wgs84_long REAL,
+        reference_index INTEGER
+        )""")
+    db.execute("""
+      CREATE TABLE gridimage_geo (
+        gridimage_id INTEGER PRIMARY KEY,
+        nateastings INTEGER, natnorthings INTEGER, natgrlen TEXT,
+        viewpoint_eastings INTEGER, viewpoint_northings INTEGER,
+        viewpoint_grlen TEXT,
+        view_direction INTEGER,
+        use6fig INTEGER
+        )""")
+    db.execute("""
+      CREATE TABLE gridimage_size (
+        gridimage_id INTEGER PRIMARY KEY,
+        width INTEGER,
+        height INTEGER,
+        original_width INTEGER,
+        original_height INTEGER,
+        original_diff TEXT
+        )""")
+
+    import_table(db, 'gridimage_base', parse_line_base)
+    import_table(db, 'gridimage_geo', parse_line)
+    import_table(db, 'gridimage_size', parse_line)
