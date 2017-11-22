@@ -6,6 +6,7 @@ from pywikibot.bot import (
 import pywikibot.bot as bot
 import pywikibot.data.api as api
 import pywikibot.pagegenerators
+from pywikibot.pagegenerators import PreloadingGenerator
 import mwparserfromhell
 import re
 import sqlite3
@@ -169,78 +170,11 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         except TooManyTemplates as e:
             bot.error(str(e))
 
-def InterestingGeographsByNumber(**kwargs):
-    site = kwargs['site']
-    # Fetch starting date from a special page.
-    #startpage = pywikibot.Page(site, 'User:Geograph Update Bot/last ID')
-    #start = int(startpage.text)
-    #startsortkeyprefix=" %08d" % (start,)
-    n = 0
-    g = api.ListGenerator("categorymembers", parameters=dict(
-            cmtitle="Category:Images from the Geograph British Isles project",
-            cmprop="title|sortkeyprefix", cmtype="file",
-            cmstartsortkeyprefix=startsortkeyprefix), **kwargs)
-    g1 = api.QueryGenerator(parameters=dict(
-        generator="categorymembers",
-        gcmtitle="Category:Images from the Geograph British Isles project",
-        gcmtype="file", gcmstartsortkeyprefix=startsortkeyprefix,
-        prop="imageinfo", iiprop="size"), **kwargs)
-    for page in InterestingGeographGenerator(site, g0, g1):
-        yield page
-        n = n + 1;
-        if (n % 50 == 0):
-            # Write a checkpoint every fifty yielded items
-            startpage.text = str(gridimage_id)
-            startpage.save("Checkpoint: up to %d" % (gridimage_id,))
 
-def InterestingGeographsByDate(**kwargs):
+def GeographBotUploads(**kwargs):
     site = kwargs['site']
-    g0 = api.ListGenerator("categorymembers", parameters=dict(
-            cmtitle="Category:Images from the Geograph British Isles project",
-            cmprop="title|sortkeyprefix", cmtype="file",
-            cmsort="timestamp", cmdir="older",
-            ), **kwargs)
-    g1 = api.QueryGenerator(parameters=dict(
-        generator="categorymembers",
-        gcmtitle="Category:Images from the Geograph British Isles project",
-        gcmtype="file",
-        gcmsort="timestamp", gcmdir="older",
-        prop="imageinfo", iiprop="size"), **kwargs)
-    yield from InterestingGeographGenerator(site, g0, g1)
-
-def InterestingGeographGenerator(site, g0, g1):
-    for item in merge_generators(g0, g1):
-        try:
-            gridimage_id = int(item['sortkeyprefix'])
-            c = geodb.cursor()
-            c.execute("""
-                SELECT width, height, original_width, original_height
-                    FROM gridimage_size
-                    WHERE gridimage_id = ?
-                """, (gridimage_id,))
-            row = c.fetchone()
-            if row == None:
-                raise NotInGeographDatabase("Geograph ID %d not in database" %
-                                            (gridimage_id,))
-            (basic_width, basic_height, original_width, original_height) = row
-            if original_width == 0:
-                raise NotEligible("no high-res version available")
-            if not aspect_ratios_match(basic_width, basic_height,
-                                       original_width, original_height):
-                raise NotEligible("aspect ratios of images differ")
-            ii = item['imageinfo'][0]
-            if ((ii['width'], ii['height']) ==
-                (original_width, original_height)):
-                # We already have the full-resolution version.
-                raise NotEligible("high-res version already uploaded")
-        except NotEligible as e:
-            print("%d: %s" % (gridimage_id, str(e)), file=whynot)
-            continue
-        except Exception:
-            pass # Anything odd happens, yield the item for further inspection.
-        page = pywikibot.FilePage(site, item['title'])
-        page.gridimage_id = gridimage_id
-        yield page
+    return api.PageGenerator("allimages", parameters=dict(
+        gaisort='timestamp', gaiuser='GeographBot'), **kwargs)
         
 def main(*args):
     options = {}
@@ -262,7 +196,7 @@ def main(*args):
     # pages from the wiki simultaneously.
     gen = genFactory.getCombinedGenerator(preload=True)
     if not gen:
-        gen = InterestingGeographsByDate(site=pywikibot.Site())
+        gen = PreloadingGenerator(GeographBotUploads(site=pywikibot.Site()))
     if gen:
         # pass generator and private options to the bot
         bot = FixLocationBot(gen, **options)
