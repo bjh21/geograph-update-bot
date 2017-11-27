@@ -105,6 +105,9 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             self.is_original_location(page, location_template) and
             new_location != location_template):
             bot.log("Proposed location: %s" % (new_location,))
+            if new_location.get('prec') == 'prec=1000':
+                bot.log("Skipping because location precision is 1km")
+                return
             set_location(tree, new_location)
             if new_location != None:
                 azon, azno, distance = (
@@ -119,6 +122,9 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if not has_object_location(tree):
             objloc = object_location_from_row(row)
             bot.log("New object location: %s" % (objloc,))
+            if objloc.get('prec') == 'prec=1000':
+                bot.log("Skipping because object location precision is 1km")
+                return
             set_object_location(tree, objloc)
             minor = False
             object_location_added = True
