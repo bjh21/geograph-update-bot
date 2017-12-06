@@ -177,10 +177,12 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             bot.error(str(e))
 
 
-def GeographBotUploads(**kwargs):
-    site = kwargs['site']
-    return api.PageGenerator("allimages", parameters=dict(
-        gaisort='timestamp', gaiuser='GeographBot'), **kwargs)
+def GeographBotUploads(parameters = None, **kwargs):
+    if parameters == None: parameters = { }
+    parameters['gaiuser'] = 'GeographBot'
+    parameters['gaisort'] = 'timestamp'
+    print(parameters)
+    return api.PageGenerator("allimages", parameters=parameters, **kwargs)
         
 def main(*args):
     options = {}
@@ -192,17 +194,21 @@ def main(*args):
     # to work on.
     genFactory = pywikibot.pagegenerators.GeneratorFactory()
 
+    extraparams = { }
     # Parse command line arguments
     for arg in local_args:
 
         # Catch the pywikibot.pagegenerators options
         if genFactory.handleArg(arg):
             continue  # nothing to do here
+        if arg.startswith("-aistart:"):
+            extraparams = { 'gaistart': arg[9:] }
     # The preloading option is responsible for downloading multiple
     # pages from the wiki simultaneously.
     gen = genFactory.getCombinedGenerator(preload=True)
     if not gen:
-        gen = PreloadingGenerator(GeographBotUploads(site=pywikibot.Site()))
+        gen = PreloadingGenerator(GeographBotUploads(site=pywikibot.Site(),
+                                                     parameters=extraparams))
     if gen:
         # pass generator and private options to the bot
         bot = FixLocationBot(gen, **options)
