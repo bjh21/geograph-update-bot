@@ -105,7 +105,13 @@ def location_from_row(row):
     # Row is assumed to be a database row.
     grids = { 1: bng, 2: ig }
     grid = grids[row['reference_index']]
-    if row['viewpoint_grlen'] != '0':
+    # Usually, lack of a viewpoint location is indicated by
+    # viewpoint_grlen = '0'.  Sometimes, though, it's indicated by
+    # viewpoint_northings = 0 and viewpoint_eastings = 0, so we handle
+    # that as well.
+    if not (row['viewpoint_grlen'] == '0' or
+            (row['viewpoint_eastings'] == 0 and
+             row['viewpoint_northings'] == 0)):
         e, n, digits = (row['viewpoint_eastings'], row['viewpoint_northings'],
                         int(row['viewpoint_grlen']))
     elif row['moderation_status'] == 'geograph':
@@ -172,7 +178,9 @@ def format_row(row):
     else:
         ret += fmtref(row['nateastings'], row['natnorthings'],
                       int(row['natgrlen']))
-    if row['viewpoint_grlen'] != '0':
+    if not (row['viewpoint_grlen'] == '0' or
+            (row['viewpoint_eastings'] == 0 and
+             row['viewpoint_northings'] == 0)):
         ret += "; viewpoint " + fmtref(row['viewpoint_eastings'],
                                        row['viewpoint_northings'],
                                        int(row['viewpoint_grlen']))
