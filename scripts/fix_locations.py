@@ -72,11 +72,14 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             return True
         lat = float(str(first_location.get(1)))
         lon = float(str(first_location.get(2)))
-        first_location.add(1, "%.4f" % (lat,))
-        first_location.add(2, "%.4f" % (lon,))
-        if location_template == first_location:
-            bot.log("Location matches rounded original")
-            return True        
+        # Try both rounding down and rounding to nearest.
+        for rlat in (lat, lat - 0.00005):
+            for rlon in (lon, lon - 0.00005):
+                first_location.add(1, "%.4f" % (rlat,))
+                first_location.add(2, "%.4f" % (rlon,))
+                if location_template == first_location:
+                    bot.log("Location matches rounded original")
+                    return True
         return False
     def process_page(self, page):
         location_replaced = False
