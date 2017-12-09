@@ -7,6 +7,7 @@ import pywikibot.bot as bot
 import pywikibot.data.api as api
 import pywikibot.pagegenerators
 from pywikibot.pagegenerators import PreloadingGenerator
+from math import copysign
 import mwparserfromhell
 import re
 import sqlite3
@@ -72,9 +73,9 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             return True
         lat = float(str(first_location.get(1)))
         lon = float(str(first_location.get(2)))
-        # Try both rounding down and rounding to nearest.
-        for rlat in (lat, lat - 0.00005):
-            for rlon in (lon, lon - 0.00005):
+        # Try both rounding towards zero and rounding to nearest.
+        for rlat in (lat, lat - copysign(0.00005, lat)):
+            for rlon in (lon, lon - copysign(0.00005, lon)):
                 first_location.add(1, "%.4f" % (rlat,))
                 first_location.add(2, "%.4f" % (rlon,))
                 if location_template == first_location:
