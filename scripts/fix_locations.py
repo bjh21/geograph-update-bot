@@ -119,6 +119,10 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             else:
                 minor = False
                 location_removed = True
+        else:
+            # No dubious {{Location dec}} template, so skip this file
+            # for now.
+            return
         if not has_object_location(tree):
             objloc = object_location_from_row(row)
             bot.log("New object location: %s" % (objloc,))
