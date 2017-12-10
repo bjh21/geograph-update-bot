@@ -78,6 +78,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             for rlon in (lon, lon - copysign(0.00005, lon)):
                 first_location.add(1, "%.4f" % (rlat,))
                 first_location.add(2, "%.4f" % (rlon,))
+                bot.log("checking %s" % (first_location,))
                 if location_template == first_location:
                     bot.log("Location matches rounded original")
                     return True
@@ -86,6 +87,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         location_replaced = False
         location_removed = False
         object_location_added = False
+        revid = page.latest_revision_id
         tree = mwparserfromhell.parse(page.text)
         gridimage_id = get_gridimage_id(tree)
         c = geodb.cursor()
@@ -138,7 +140,6 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             object_location_added = True
         newtext = str(tree)
         if newtext != page.text:
-            page.text = newtext
             if location_replaced:
                 if object_location_added:
                     summary = (
@@ -170,6 +171,16 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             else:
                 assert(False) # no change made!
             bot.log("edit summary: %s" % (summary,))
+            bot.log("cached revision: %s" % (page._latest_cached_revision()))
+            # Before we save, make sure pywikibot's view of the latest
+            # revision hasn't changed.  If it has, that invalidates
+            # our parse tree, and we need to start again.
+            if page.latest_revision_id != revid:
+                bot.log("page has changed (%d != %d): restarting edit" %
+                        (page.latest_revision_id, revid))
+                self.process_page(page)
+                return
+            page.text = newtext
             page.save(summary, minor=minor)
 
     def treat_page(self):
