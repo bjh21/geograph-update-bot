@@ -78,7 +78,6 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             for rlon in (lon, lon - copysign(0.00005, lon)):
                 first_location.add(1, "%.4f" % (rlat,))
                 first_location.add(2, "%.4f" % (rlon,))
-                bot.log("checking %s" % (first_location,))
                 if location_template == first_location:
                     bot.log("Location matches rounded original")
                     return True
