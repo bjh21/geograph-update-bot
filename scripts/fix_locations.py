@@ -170,7 +170,6 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             else:
                 assert(False) # no change made!
             bot.log("edit summary: %s" % (summary,))
-            bot.log("cached revision: %s" % (page._latest_cached_revision()))
             # Before we save, make sure pywikibot's view of the latest
             # revision hasn't changed.  If it has, that invalidates
             # our parse tree, and we need to start again.
