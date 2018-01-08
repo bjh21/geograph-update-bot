@@ -18,6 +18,12 @@ from location import (location_from_row, object_location_from_row,
 
 from gubutil import get_gridimage_id, TooManyTemplates
 
+# Ways that Geograph locations get in:
+# BotMultichill (example?)
+# DschwenBot (File:Panorama-Walsall.jpg)
+# File Upload Bot (Magnus Manske)
+# Geograph2commons
+
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
 
