@@ -136,13 +136,13 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             return
         if not has_object_location(tree):
             objloc = object_location_from_row(row)
-            bot.log("New object location: %s" % (objloc,))
             if objloc.get('prec') == 'prec=1000':
-                bot.log("Skipping because object location precision is 1km")
-                return
-            set_object_location(tree, objloc)
-            minor = False
-            object_location_added = True
+                bot.log("Skipping object location: precision is 1km")
+            else:
+                bot.log("New object location: %s" % (objloc,))
+                set_object_location(tree, objloc)
+                minor = False
+                object_location_added = True
         newtext = str(tree)
         if newtext != page.text:
             if location_replaced:
