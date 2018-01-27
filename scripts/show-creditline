@@ -2,7 +2,7 @@
 
 from __future__ import division, print_function, unicode_literals
 import sqlite3
-from creditline import creditline_from_row
+from creditline import otherfields_from_row
 import sys
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
@@ -19,7 +19,6 @@ def main():
         if row == None:
             raise NotInGeographDatabase("Geograph ID %d not in database" %
                                         (gridimage_id,))
-        cl = creditline_from_row(row)
-        if cl: print(cl)
+        print('|' + str(otherfields_from_row(row)))
         
 main()
