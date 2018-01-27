@@ -1,0 +1,69 @@
+Get Geograph sizes from:
+http://data.geograph.org.uk/dumps/
+table gridimage_size
+
+http://data.geograph.org.uk/dumps/gridimage_size.mysql.gz
+
+To download geograph full-res image, will need URL like:
+
+http://www.geograph.org.uk/reuse.php?id=5490600&download=b964e03d&size=original
+
+download key is the same as for the main image:
+
+http://s0.geograph.org.uk/geophotos/05/49/06/5490600_b964e03d.jpg
+
+So can be extracted from oEmbed API:
+
+http://api.geograph.org.uk/api/oembed?url=http%3A%2F%2Fwww.geograph.org.uk%2Fphoto%2F5490600&format=json
+
+or
+
+http://api.geograph.org.uk/api/photo/5490600/[apikey]?output=json
+
+
+On Commons, a search like:
+
+hastemplate:geograph filewidth:640
+
+would be good.  Note filewidth to avoid images that might need rotation.
+
+Check against database to see if a potential upgrade, then check
+author, SHA-1 (against Geograph 640px), then get full image and
+replace.
+
+How pywikibot gets category members
+===================================
+
+pywikibot.pagegenerators.CategorizedPageGenerator
+ -> pywikibot.page.Category.articles
+   -> pywikibot.site.APISite.categorymembers
+     -> pywikibot.data.api.PageGenerator
+
+I think for my purposes I want a ListGenerator.
+
+Database imports
+================
+
+Imports are easy enough for tables that don't include user-supplied
+text.  gridimage_base is a bit of a problem, though.
+
+Many images have apostrophes in their titles.  These appear as "\'" in
+MySQL dumps.  Similarly, "\"" and "\\" appear. (e.g. 4156015 has "\\")
+
+TSVs can be fun to parse. Some pictures have tabs in their
+titles. Examples: 591855 591863 596424 599942 599986 600861 602820
+603685 618010 618735 618767 628836 628842 630877 632073 632827 etc
+
+TSVs and MySQL dumps are encoded in CP1252.  Unicode characters that
+can't be represented in CP1252 are encoded as XML entities
+(e.g. "&#8470;").  However, bare ampersands can also appear (and get
+correctly turned into entities by Geograph).
+
+More examples:
+Ampersand: 255651
+Double apostrophe: 318375 857118 2103546
+Entities: 9297 14634
+Curly quotes: 43508
+Double square brackets: 627158 648465
+Equals: 1198121
+Vertical bar: 504963
