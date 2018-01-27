@@ -1,0 +1,25 @@
+#! /usr/bin/python3
+
+from __future__ import division, print_function, unicode_literals
+import sqlite3
+from creditline import creditline_from_row
+import sys
+
+geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
+geodb.row_factory = sqlite3.Row
+
+def main():
+        gridimage_id = int(sys.argv[1])
+        c = geodb.cursor()
+        c.execute("""
+            SELECT * FROM gridimage_base
+               WHERE gridimage_id = ?
+            """, (gridimage_id,))
+        row = c.fetchone()
+        if row == None:
+            raise NotInGeographDatabase("Geograph ID %d not in database" %
+                                        (gridimage_id,))
+        cl = creditline_from_row(row)
+        if cl: print(cl)
+        
+main()
