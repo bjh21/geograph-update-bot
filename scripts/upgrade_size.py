@@ -126,6 +126,8 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise NotInGeographDatabase("Geograph ID %d not in database" %
                                         (gridimage_id,))
         gwidth, gheight, original_width, original_height, original_diff = row
+        if original_width == 0:
+            raise NotEligible("no high-res version available")
         if original_diff == 'yes':
             raise NotEligible("Geograph says pictures are different")
         if not aspect_ratios_match(gwidth, gheight,
