@@ -8,6 +8,7 @@ from pywikibot.bot import (
 import pywikibot.bot as bot
 import pywikibot.data.api as api
 import pywikibot.pagegenerators
+from pywikibot.page import FilePage
 import re
 import requests
 import sqlite3
@@ -174,8 +175,12 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
 
     def treat_page(self):
         try:
-            gridimage_id = self.current_page.gridimage_id
-            self.process_page(self.current_page)
+            gridimage_id = -1
+            if hasattr(self.current_page, 'gridimage_id'):
+                gridimage_id = self.current_page.gridimage_id
+            if self.current_page.namespace() != 6:
+                return # Not a file page
+            self.process_page(FilePage(self.current_page))
         except NotEligible as e:
             print("%d: %s" % (gridimage_id, str(e)), file=whynot)
             bot.log(str(e))
