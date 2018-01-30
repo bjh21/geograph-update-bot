@@ -8,6 +8,8 @@ from mwparserfromhell.wikicode import Wikicode
 
 import re
 
+from gubutil import tlgetall, tlgetone
+
 def wikify(x):
     # Convert a string from the Geograph database into Wikicode.
     x = re.sub(r"&#(\d+);", lambda m: chr(int(m.group(1))), x)
@@ -27,3 +29,25 @@ def creditline_from_row(row):
 
 def otherfields_from_row(row):
     return Parameter("other fields", creditline_from_row(row))
+
+# Known infobox templates
+# https://commons.wikimedia.org/wiki/Commons:Infobox_templates
+infoboxes = ("Information", "Artwork", "Photograph", "Art photo", "Book",
+             "Map", "Musical work", "Information2", "COAInformation",
+             "Bus-Information", "Infobox aircraft image", "Spoken article",
+             "Specimen")
+
+otherfieldses = ("Other fields", "Other_fields", "other fields",
+                 "Other_fields")
+
+def add_creditline(t, line):
+    assert(len(tlgetall(t, ['Credit line'])) == 0)
+    info = tlgetone(t, infoboxes)
+    for f in otherfieldses:
+        if info.has(f):
+            otherfields = info.get(f)
+            otherfields.value.append(Text(" "))
+            otherfields.value.append(line)
+            otherfields.value.append(Text("\n"))
+            return
+    info.add("other fields", line)
