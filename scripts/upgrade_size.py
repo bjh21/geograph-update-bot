@@ -17,6 +17,8 @@ from requests.exceptions import HTTPError
 from urllib.parse import urlencode
 from compare import compare_revisions
 
+from gubutils import canonicalise_name
+
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 
 client = requests.Session()
@@ -64,12 +66,6 @@ def aspect_ratios_match(w0, h0, w1, h1):
     # (allowing for possible rotation).
     return (0.99 < (w0/h0) / (w1/h1) < 1.01 or
             0.99 < (w0/h0) / (h1/w1) < 1.01)
-
-def canonicalise_name(n):
-    n = re.sub("^ +", "", n) # Strip leading spaces.
-    n = re.sub(" +$", "", n) # Strip trailing spaces.
-    n = re.sub("  +", " ", n) # Compress multiple spaces
-    return n
 
 class NotEligible(Exception):
     "This file is not eligible for resolution upgrade."

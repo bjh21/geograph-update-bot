@@ -37,3 +37,10 @@ geographtls = ("Geograph", "Also geograph")
 # Get Geograph ID of a file
 def get_gridimage_id(tree):
     return int(str(tlgetone(tree, geographtls).get(1)))
+
+# Canonicalise a Geograph user name for comparison
+def canonicalise_name(n):
+    n = re.sub("^ +", "", n) # Strip leading spaces.
+    n = re.sub(" +$", "", n) # Strip trailing spaces.
+    n = re.sub("  +", " ", n) # Compress multiple spaces
+    return n
