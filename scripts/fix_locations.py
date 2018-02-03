@@ -11,6 +11,7 @@ from math import copysign
 import mwparserfromhell
 import re
 import sqlite3
+from creditline import creditline_from_row, can_add_creditline, add_creditline
 from location import (location_from_row, object_location_from_row,
                       az_dist_between_locations, format_row,
                       format_direction, get_location, has_object_location,
@@ -92,6 +93,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         location_replaced = False
         location_removed = False
         object_location_added = False
+        creditline_added = False
         revid = page.latest_revision_id
         tree = mwparserfromhell.parse(page.text)
         gridimage_id = get_gridimage_id(tree)
@@ -141,6 +143,12 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 set_object_location(tree, objloc)
                 minor = False
                 object_location_added = True
+        creditline = creditline_from_row(row)
+        if can_add_creditline(tree, creditline):
+            add_creditline(tree, creditline)
+            creditline_added = True
+        else:
+            bot.log("Cannot add credit line")
         newtext = str(tree)
         if newtext != page.text:
             if location_replaced:
@@ -172,7 +180,12 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     "Add object location from Geograph (%s)" %
                     (format_row(row),))
             else:
-                assert(False) # no change made!
+                summary = ""
+            if creditline_added:
+                if summary == "":
+                    summary = "Add credit line with title from Geograph"
+                else:
+                    summary += "; add credit line with title from Geograph"
             bot.log("edit summary: %s" % (summary,))
             # Before we save, make sure pywikibot's view of the latest
             # revision hasn't changed.  If it has, that invalidates
