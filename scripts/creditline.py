@@ -8,7 +8,7 @@ from mwparserfromhell.wikicode import Wikicode
 
 import re
 
-from gubutil import tlgetall, tlgetone
+from gubutil import tlgetall, tlgetone, canonicalise_name, TooManyTemplates
 
 def wikify(x):
     # Convert a string from the Geograph database into Wikicode.
@@ -51,3 +51,19 @@ def add_creditline(t, line):
             otherfields.value.append(Text("\n"))
             return
     info.add("other fields", line)
+
+def can_add_creditline(t, line):
+    if len(tlgetall(t, ['Credit line'])) != 0:
+        return False # Already have a credit line
+    try:
+        geo = tlgetone(t, ['Geograph'])
+    except IndexError:
+        return False
+    except TooManyTemplates:
+        return False
+    geo_author = geo.get(2).value
+    cl_author = line.get('Author').value
+    if canonicalise_name(geo_author) != canonicalise_name(cl_author):
+        # Don't add a credit line with wrong author
+        return False
+    return True

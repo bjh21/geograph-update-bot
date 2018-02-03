@@ -41,7 +41,8 @@ def get_gridimage_id(tree):
 
 # Canonicalise a Geograph user name for comparison
 def canonicalise_name(n):
-    n = re.sub("^ +", "", n) # Strip leading spaces.
-    n = re.sub(" +$", "", n) # Strip trailing spaces.
-    n = re.sub("  +", " ", n) # Compress multiple spaces
+    n = str(n)
+    n = re.sub("^\s+", "", n) # Strip leading spaces.
+    n = re.sub("\s+$", "", n) # Strip trailing spaces.
+    n = re.sub("\s+", " ", n) # Compress multiple spaces
     return n
