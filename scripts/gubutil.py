@@ -1,6 +1,7 @@
 # Useful stuff for all tasks of Geograph Update Bot.
 
 from functools import partial
+import re
 
 # Template searching functions.
 

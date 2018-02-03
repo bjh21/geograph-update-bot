@@ -17,7 +17,7 @@ from requests.exceptions import HTTPError
 from urllib.parse import urlencode
 from compare import compare_revisions
 
-from gubutils import canonicalise_name
+from gubutil import canonicalise_name
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 
