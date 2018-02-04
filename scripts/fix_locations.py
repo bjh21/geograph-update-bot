@@ -17,7 +17,7 @@ from location import (location_from_row, object_location_from_row,
                       format_direction, get_location, has_object_location,
                       set_location, set_object_location)
 
-from gubutil import get_gridimage_id, TooManyTemplates
+from gubutil import get_gridimage_id, TooManyTemplates, tlgetone
 
 # Ways that Geograph locations get in:
 # BotMultichill (example?)
@@ -68,12 +68,14 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise BadTemplate("broken {{Geograph}} template")
         bot.log("Geograph ID is %d" % (gridimage_id,))
         return gridimage_id
-    def is_original_location(self, page, location_template):
+    def get_original_tree(self, page):
         firstrev = page.oldest_revision.full_hist_entry()
         if firstrev.user != 'GeographBot':
             raise NotEligible("Not a GeographBot upload")
         first_text = page.getOldVersion(firstrev.revid)
-        first_tree = mwparserfromhell.parse(first_text)
+        return mwparserfromhell.parse(first_text)        
+    def is_original_location(self, page, location_template):
+        first_tree = self.get_original_tree(page)
         first_location = get_location(first_tree)
         if location_template == first_location:
             bot.log("Location identical to original")
@@ -89,6 +91,12 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     bot.log("Location matches rounded original")
                     return True
         return False
+    def is_original_title(self, page, title):
+        first_tree = self.get_original_tree(page)
+        first_description = str(tlgetone(first_tree, ["Information"]).
+                                get("description").value.get(0).get(1).value)
+        return (first_description == title or
+                first_description.startswith(title + " "))
     def process_page(self, page):
         location_replaced = False
         location_removed = False
@@ -144,7 +152,8 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 minor = False
                 object_location_added = True
         creditline = creditline_from_row(row)
-        if can_add_creditline(tree, creditline):
+        if (can_add_creditline(tree, creditline) and
+            self.is_original_title(page, row['title'])):
             add_creditline(tree, creditline)
             creditline_added = True
         else:
