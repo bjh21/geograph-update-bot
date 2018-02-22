@@ -22,8 +22,7 @@ def creditline_from_row(row):
     t.add("DUMMY ", " VALUE\n ") # to set the formatting
     t.add("Author", wikify(row['realname']))
     t.add("Other", Tag('i', wikify(row['title']), wiki_markup="''"))
-    t.add("License",
-        parse('[https://creativecommons.org/licenses/by-sa/2.0/ CC BY-SA 2.0]'))
+    t.add("License", "CC-BY-SA-2.0")
     t.remove("DUMMY")
     return t
 
