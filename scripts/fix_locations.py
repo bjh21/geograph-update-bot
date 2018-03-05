@@ -126,9 +126,9 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             self.is_original_location(page, location_template) and
             new_location != location_template):
             bot.log("Proposed location: %s" % (new_location,))
-            set_location(tree, new_location)
             if (new_location != None and
                 new_location.get('prec').value != '1000'):
+                set_location(tree, new_location)
                 azon, azno, distance = (
                     az_dist_between_locations(location_template, new_location))
                 bot.log("Distance moved: %.1f m" % (distance,))
@@ -136,6 +136,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     minor = False
                 location_replaced = True
             else:
+                set_location(tree, None)
                 minor = False
                 location_removed = True
         else:
