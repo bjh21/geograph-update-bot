@@ -96,7 +96,8 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         first_description = str(tlgetone(first_tree, ["Information"]).
                                 get("description").value.get(0).get(1).value)
         return (first_description == title or
-                first_description.startswith(title + " "))
+                first_description.startswith(title + " ") or
+                first_description.startswith(title + ". "))
     def process_page(self, page):
         location_replaced = False
         location_removed = False
