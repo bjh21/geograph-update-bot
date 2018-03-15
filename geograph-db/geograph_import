@@ -34,6 +34,16 @@ with sqlite3.connect("geograph.sqlite3") as db:
         reference_index INTEGER
         )""")
     db.execute("""
+      CREATE TABLE gridimage_extra (
+        gridimage_id INTEGER PRIMARY KEY,
+        ftf INTEGER,
+        submitted TEXT,
+        upd_timestamp TEXT,
+        credit_realname INTEGER,
+        seq_no INTEGER,
+        points TEXT
+        )""")
+    db.execute("""
       CREATE TABLE gridimage_geo (
         gridimage_id INTEGER PRIMARY KEY,
         nateastings INTEGER, natnorthings INTEGER, natgrlen TEXT,
@@ -53,5 +63,6 @@ with sqlite3.connect("geograph.sqlite3") as db:
         )""")
 
     import_table(db, 'gridimage_base', parse_line_base)
+    import_table(db, 'gridimage_extra', parse_line)
     import_table(db, 'gridimage_geo', parse_line)
     import_table(db, 'gridimage_size', parse_line)
