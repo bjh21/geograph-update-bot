@@ -16,8 +16,9 @@ import tempfile
 from requests.exceptions import HTTPError
 from urllib.parse import urlencode
 from compare import compare_revisions
+import mwparserfromhell
 
-from gubutil import canonicalise_name
+from gubutil import canonicalise_name, tlgetone
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
 
@@ -96,16 +97,11 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         for fi in page.get_file_history().values():
             if fi.user == "Geograph Update Bot":
                 raise NotEligible("file already uploaded by me")
-        templates = page.templatesWithParams()
-        geograph_templates = [t for t in templates if t[0] == self.geograph]
-        if len(geograph_templates) == 0:
-            raise NotEligible("no {{Geograph}} template")
-        if len(geograph_templates) > 1:
-            raise BadTemplate("%d {{Geograph}} templates" %
-                              (len(geograph_templates),))
+        tree = mwparserfromhell.parse(page.text)
+        geograph_template = tlgetone(tree, ['Geograph'])
         try:
-            gridimage_id = int(geograph_templates[0][1][0])
-            commons_author = geograph_templates[0][1][1]
+            gridimage_id = int(str(geograph_template.get(1).value))
+            commons_author = str(geograph_template.get(2).value)
         except ValueError:
             raise BadTemplate("broken {{Geograph}} template")
         except IndexError:
