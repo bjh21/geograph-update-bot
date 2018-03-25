@@ -21,6 +21,7 @@ import mwparserfromhell
 from gubutil import canonicalise_name, tlgetone
 
 geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
+geodb.row_factory = sqlite3.Row
 
 client = requests.Session()
 client.headers['User-Agent'] = "upgrade_size (bjh21@bjh21.me.uk)"
@@ -112,16 +113,16 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         bot.log("Geograph ID is %d" % (gridimage_id,))
         c = geodb.cursor()
         c.execute("""
-            SELECT width, height, original_width, original_height,
-                   original_diff
-               FROM gridimage_size
+            SELECT * FROM gridimage_base NATURAL JOIN gridimage_size
                WHERE gridimage_id = ?
             """, (gridimage_id,))
         row = c.fetchone()
         if row == None:
             raise NotInGeographDatabase("Geograph ID %d not in database" %
                                         (gridimage_id,))
-        gwidth, gheight, original_width, original_height, original_diff = row
+        gwidth, gheight, original_width, original_height, original_diff = [
+            row[x] for x in ('width', 'height', 'original_width',
+                             'original_height', 'original_diff')]
         if original_width == 0:
             raise NotEligible("no high-res version available")
         if original_diff == 'yes':
