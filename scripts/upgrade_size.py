@@ -141,6 +141,20 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise NotEligible("author does not match Geograph (%s vs. %s)" %
                               (repr(commons_author),
                                repr(geograph_info['author_name'])))
+        try:
+            credit_line = tlgetone(tree, ['Credit line'])
+        except IndexError:
+            pass
+        else:
+            commons_title = ''.join([
+                str(x) for x in
+                credit_line.get('Other').value.filter_text()]).strip()
+            bot.log("Title on Commons: %s" % (commons_title,))
+            if (canonicalise_name(commons_title) !=
+                canonicalise_name(geograph_info['title'])):
+                raise NotEligible("title does not match Geograph (%s vs. %s)" %
+                                  (repr(commons_title),
+                                   repr(geograph_info['title'])))
         basic_image = get_geograph_basic(gridimage_id, geograph_info)
         if hashlib.sha1(basic_image).hexdigest() != fi.sha1:
             raise NotEligible("SHA-1 does not match Geograph basic image.")
