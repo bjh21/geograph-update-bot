@@ -98,7 +98,10 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             if fi.user == "Geograph Update Bot":
                 raise NotEligible("file already uploaded by me")
         tree = mwparserfromhell.parse(page.text)
-        geograph_template = tlgetone(tree, ['Geograph'])
+        try:
+            geograph_template = tlgetone(tree, ['Geograph'])
+        except IndexError:
+            raise NotEligible("No {{Geograph}} template")
         try:
             gridimage_id = int(str(geograph_template.get(1).value))
             commons_author = str(geograph_template.get(2).value)
