@@ -68,10 +68,11 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise BadTemplate("broken {{Geograph}} template")
         bot.log("Geograph ID is %d" % (gridimage_id,))
         return gridimage_id
+    def is_geographbot_upload(self, page):
+        firstrev = page.oldest_revision.full_hist_entry()
+        return firstrev.user == 'GeographBot'
     def get_original_tree(self, page):
         firstrev = page.oldest_revision.full_hist_entry()
-        if firstrev.user != 'GeographBot':
-            raise NotEligible("Not a GeographBot upload")
         first_text = page.getOldVersion(firstrev.revid)
         return mwparserfromhell.parse(first_text)        
     def is_original_location(self, page, location_template):
@@ -92,6 +93,9 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     return True
         return False
     def is_original_title(self, page, title):
+        # This heuristic depends on GeographBot's behaviour.
+        if not self.is_geographbot_upload(page):
+            return False
         first_tree = self.get_original_tree(page)
         first_description = str(tlgetone(first_tree, ["Information"]).
                                 get("description").value.get(0).get(1).value)
@@ -104,6 +108,8 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         location_removed = False
         object_location_added = False
         creditline_added = False
+        if not self.is_geographbot_upload(page):
+            raise NotEligible("Not a GeographBot upload")
         revid = page.latest_revision_id
         tree = mwparserfromhell.parse(page.text)
         gridimage_id = get_gridimage_id(tree)
