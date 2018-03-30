@@ -161,6 +161,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             self.is_original_title(page, row['title'])):
             add_creditline(tree, creditline)
             creditline_added = True
+            minor = False
         else:
             bot.log("Cannot add credit line")
         newtext = str(tree)
