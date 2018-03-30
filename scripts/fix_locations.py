@@ -77,7 +77,10 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         return mwparserfromhell.parse(first_text)        
     def is_original_location(self, page, location_template):
         first_tree = self.get_original_tree(page)
-        first_location = get_location(first_tree)
+        try:
+            first_location = get_location(first_tree)
+        except IndexError:
+            return False # Can't be original if there's no original
         if location_template == first_location:
             bot.log("Location identical to original")
             return True
