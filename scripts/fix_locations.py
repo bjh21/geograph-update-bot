@@ -147,10 +147,6 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 set_location(tree, None)
                 minor = False
                 location_removed = True
-        else:
-            # No dubious {{Location dec}} template, so skip this file
-            # for now.
-            return
         if not has_object_location(tree):
             objloc = object_location_from_row(row)
             if objloc.get('prec').value == '1000' and location_replaced:
@@ -226,6 +222,8 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         except MajorProblem as e:
             bot.error(str(e))
         except TooManyTemplates as e:
+            bot.error(str(e))
+        except OtherPageSaveError as e:
             bot.error(str(e))
 
 
