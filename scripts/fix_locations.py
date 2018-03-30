@@ -108,8 +108,6 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         location_removed = False
         object_location_added = False
         creditline_added = False
-        if not self.is_geographbot_upload(page):
-            raise NotEligible("Not a GeographBot upload")
         revid = page.latest_revision_id
         tree = mwparserfromhell.parse(page.text)
         gridimage_id = get_gridimage_id(tree)
@@ -166,6 +164,8 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             bot.log("Cannot add credit line")
         newtext = str(tree)
         if newtext != page.text:
+            if not self.is_geographbot_upload(page):
+                raise NotEligible("Not a GeographBot upload")
             if location_replaced:
                 if object_location_added:
                     summary = (
