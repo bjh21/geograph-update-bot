@@ -224,7 +224,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             bot.error(str(e))
         except TooManyTemplates as e:
             bot.error(str(e))
-        except OtherPageSaveError as e:
+        except pywikibot.OtherPageSaveError as e:
             bot.error(str(e))
 
 
