@@ -150,7 +150,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 location_removed = True
         if not has_object_location(tree):
             objloc = object_location_from_row(row)
-            if objloc.get('prec').value == '1000' and location_replaced:
+            if objloc.get('prec').value == '1000' and not location_removed:
                 bot.log("Skipping object location: precision is 1km")
             else:
                 bot.log("New object location: %s" % (objloc,))
