@@ -84,8 +84,11 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if location_template == first_location:
             bot.log("Location identical to original")
             return True
-        lat = float(str(first_location.get(1)))
-        lon = float(str(first_location.get(2)))
+        try:
+            lat = float(str(first_location.get(1)))
+            lon = float(str(first_location.get(2)))
+        except ValueError:
+            return False # Can't do arithmetic on this
         # Try both rounding towards zero and rounding to nearest.
         for rlat in (lat, lat - copysign(0.00005, lat)):
             for rlon in (lon, lon - copysign(0.00005, lon)):
@@ -133,6 +136,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if (location_template != None and
             location_template.name == 'Location dec' and
             self.is_original_location(page, location_template) and
+            self.is_geographbot_upload(page) and
             new_location != location_template):
             bot.log("Proposed location: %s" % (new_location,))
             if (new_location != None and
