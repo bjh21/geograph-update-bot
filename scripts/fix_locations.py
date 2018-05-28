@@ -95,7 +95,15 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 first_location.add(1, "%.4f" % (rlat,))
                 first_location.add(2, "%.4f" % (rlon,))
                 if location_template == first_location:
-                    bot.log("Location matches rounded original")
+                    bot.log("Location matches original rounded to 4dp")
+                    return True
+        # Try both rounding towards zero and rounding to nearest.
+        for rlat in (lat, lat - copysign(0.0005, lat)):
+            for rlon in (lon, lon - copysign(0.0005, lon)):
+                first_location.add(1, "%.3f" % (rlat,))
+                first_location.add(2, "%.3f" % (rlon,))
+                if location_template == first_location:
+                    bot.log("Location matches original rounded to 3dp")
                     return True
         return False
     def is_original_title(self, page, title):
