@@ -125,6 +125,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
     def process_page(self, page):
         location_replaced = False
         location_removed = False
+        location_was_mine = False
         object_location_added = False
         creditline_added = False
         revid = page.latest_revision_id
@@ -165,6 +166,13 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 set_location(tree, None)
                 minor = False
                 location_removed = True
+        if (new_location != None and
+            location_template == new_location and
+            new_location.get('prec').value == '1000'):
+            set_location(tree, None)
+            minor = False
+            location_removed = True
+            location_was_mine = True
         if not has_object_location(tree):
             objloc = object_location_from_row(row)
             if objloc.get('prec').value == '1000' and not location_removed:
@@ -200,16 +208,17 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                         "from Geograph (%s)" %
                         (distance, format_direction(azon), format_row(row)))
             elif location_removed:
-                if object_location_added:
+                if location_was_mine:
                     summary = (
-                        "Remove dubious [[User:GeographBot|GeographBot]]-"
-                        "sourced camera location and "
-                        "add object location from Geograph (%s)" %
-                        (format_row(row),))
+                        "Remove vague camera location (probably added by me)")
                 else:
                     summary = (
                         "Remove dubious [[User:GeographBot|GeographBot]]-"
                         "sourced camera location")
+                if object_location_added:
+                    summary += (
+                        " and add object location from Geograph (%s)" %
+                        (format_row(row),))
             elif object_location_added:
                 summary = (
                     "Add object location from Geograph (%s)" %
