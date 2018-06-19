@@ -7,6 +7,8 @@ import pywikibot.bot as bot
 import pywikibot.data.api as api
 import pywikibot.pagegenerators
 from pywikibot.pagegenerators import PreloadingGenerator
+from datetime import datetime, timezone
+from dateutil.tz import gettz
 from math import copysign
 import mwparserfromhell
 import re
@@ -122,6 +124,17 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 first_description == title + "." or
                 first_description.startswith(title + " ") or
                 first_description.startswith(title + ". "))
+    def unmodified_on_geograph_since_upload(self, page, row):
+        commons_dt = page.oldest_revision.full_hist_entry().timestamp
+        # For some reason, pywikibot.Timestamps aren't timezone-aware.
+        commons_dt = commons_dt.replace(tzinfo=timezone.utc)
+        geograph_date = row['upd_timestamp']
+        geograph_dt = (
+            datetime.strptime(geograph_date, "%Y-%m-%d %H:%M:%S")
+            .replace(tzinfo=gettz("Europe/London")))
+        bot.log("Commons timestamp: %s; Geograph timestamp: %s" %
+                (commons_dt, geograph_dt))
+        return geograph_dt < commons_dt
     def process_page(self, page):
         location_added = False
         location_replaced = False
@@ -135,6 +148,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         c = geodb.cursor()
         c.execute("""
             SELECT * FROM gridimage_base NATURAL JOIN gridimage_geo
+                          NATURAL JOIN gridimage_extra
                WHERE gridimage_id = ?
             """, (gridimage_id,))
         row = c.fetchone()
@@ -192,7 +206,8 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 object_location_added = True
         creditline = creditline_from_row(row)
         if (can_add_creditline(tree, creditline) and
-            self.is_original_title(page, row['title'])):
+            (self.unmodified_on_geograph_since_upload(page, row) or
+             self.is_original_title(page, row['title']))):
             add_creditline(tree, creditline)
             creditline_added = True
             minor = False
