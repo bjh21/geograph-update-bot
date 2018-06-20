@@ -37,7 +37,7 @@ infoboxes = ("Information", "Artwork", "Photograph", "Art photo", "Book",
              "Specimen")
 
 otherfieldses = ("Other fields", "Other_fields", "other fields",
-                 "Other_fields")
+                 "other_fields")
 
 def add_creditline(t, line):
     assert(len(tlgetall(t, ['Credit line'])) == 0)
