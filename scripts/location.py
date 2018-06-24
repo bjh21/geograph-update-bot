@@ -65,15 +65,15 @@ def igr_from_en(e, n, digits):
     nstr = "{:05d}".format(n%100000)[:int(digits//2)]
     return letter + estr + nstr
 
-def is_in_uk(lat, lon):
-    # Each grid is used by two countries, one of them being the UK, so
-    # we can work out what "region" to specify if we know the grid and
-    # whether the point is in the UK.  MapIt can tell us that.
-    r = requests.get(
-        'https://mapit.mysociety.org/point/4326/{:f},{:f}'.format(lon,lat))
+def region_of(grid, e, n, lat, lon):
+    r = requests.get('http://global.mapit.mysociety.org'
+                     '/point/4326/{:f},{:f}'.format(lon,lat))
     r.raise_for_status()
     j = r.json()
-    return len(j) > 0
+    for area in j.values():
+        if 'codes' in area and 'iso3166_1' in area['codes']:
+            return area['codes']['iso3166_1']
+    return None
 
 def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     # A grid reference in textual form, like SO8001, represents a
@@ -101,16 +101,11 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     paramstr = "source:geograph"
     if grid == bng:
         paramstr += "-osgb36({})".format(bngr_from_en(e, n, digits))
-        if is_in_uk(lat, lon):
-            paramstr += "_region:GB-GBN"
-        else:
-            paramstr += "_region:IM"
     if grid == ig:
         paramstr += "-irishgrid({})".format(igr_from_en(e, n, digits))
-        if is_in_uk(lat, lon):
-            paramstr += "_region:GB-NIR"
-        else:
-            paramstr += "_region:IE"
+    region = region_of(grid, e, n, lat, lon)
+    if region != None:
+        paramstr += "_region:{}".format(region)
     if view_direction != None:
         paramstr += "_heading:{}".format(view_direction)
     t = Template(mwparserfromhell.parse('Location'))
