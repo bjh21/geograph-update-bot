@@ -75,6 +75,14 @@ def region_of(grid, e, n, lat, lon):
             return area['codes']['iso3166_1']
     return None
 
+def source_from_grid(grid, e, n, digits):
+    src = "geograph"
+    if grid == bng:
+        src += "-osgb36({})".format(bngr_from_en(e, n, digits))
+    if grid == ig:
+        src += "-irishgrid({})".format(igr_from_en(e, n, digits))
+    return src
+
 def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     # A grid reference in textual form, like SO8001, represents a
     # square on the ground whose size depends on the number of digits.
@@ -98,11 +106,7 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     # but if use6fig is set, our accuracy is less
     if use6fig: prec = max(prec, 100)
     precstr = "{:g}".format(prec)
-    paramstr = "source:geograph"
-    if grid == bng:
-        paramstr += "-osgb36({})".format(bngr_from_en(e, n, digits))
-    if grid == ig:
-        paramstr += "-irishgrid({})".format(igr_from_en(e, n, digits))
+    paramstr = "source:" + source_from_grid(grid, e, n, digits)
     region = region_of(grid, e, n, lat, lon)
     if region != None:
         paramstr += "_region:{}".format(region)
@@ -270,6 +274,9 @@ def set_location(tree, loc):
             except IndexError:
                 insert_template_at_start(tree, loc)
 
+def get_object_location(tree):
+    return tlgetone(tree, objtls)
+
 def has_object_location(tree):
     return len(tlgetall(tree, objtls)) > 0
                 
@@ -288,3 +295,13 @@ def set_object_location(tree, oloc):
                 insert_template_after(tree, oloc, infoboxes)
             except IndexError:
                 insert_template_at_start(tree, oloc)
+
+def location_params(template):
+    paramstr = template.get(3)
+    paramdict = { }
+    for x in paramstr.split('_'):
+        k, _, v = x.partition(':')
+        paramdict[k] = v
+    return paramdict
+
+    
