@@ -197,7 +197,8 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             bot.log("New camera location: %s" % (new_location,))
         if not has_object_location(tree):
             objloc = object_location_from_row(row)
-            if objloc.get('prec').value == '1000' and not location_removed:
+            if (objloc.get('prec').value == '1000' and
+                not (location_removed or location_template == None)):
                 bot.log("Skipping object location: precision is 1km")
             else:
                 bot.log("New object location: %s" % (objloc,))
