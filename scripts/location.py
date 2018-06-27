@@ -305,11 +305,17 @@ def set_object_location(tree, oloc):
                 insert_template_at_start(tree, oloc)
 
 def location_params(template):
-    paramstr = template.get(3)
     paramdict = { }
-    for x in paramstr.split('_'):
-        k, _, v = x.partition(':')
-        paramdict[k] = v
+    try:
+        paramstr = template.get(3).value
+        for x in paramstr.split('_'):
+            k, _, v = x.partition(':')
+            paramdict[k] = v
+    except AttributeError:
+        # Probably passed None
+        pass
+    except ValueError:
+        # Probably parameter not found
+        pass
     return paramdict
-
     
