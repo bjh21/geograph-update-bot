@@ -65,14 +65,21 @@ def igr_from_en(e, n, digits):
     nstr = "{:05d}".format(n%100000)[:int(digits//2)]
     return letter + estr + nstr
 
-def region_of(grid, e, n, lat, lon):
-    r = requests.get('http://global.mapit.mysociety.org'
-                     '/point/4326/{:f},{:f}'.format(lon,lat))
-    r.raise_for_status()
-    j = r.json()
-    for area in j.values():
-        if 'codes' in area and 'iso3166_1' in area['codes']:
-            return area['codes']['iso3166_1']
+class MapItSettings(object):
+    def __init__(self, allowed=False):
+        self.allowed = allowed
+        self.used = False
+
+def region_of(grid, e, n, lat, lon, mapit = None):
+    if mapit and mapit.allowed:
+        r = requests.get('http://global.mapit.mysociety.org'
+                         '/point/4326/{:f},{:f}'.format(lon,lat))
+        r.raise_for_status()
+        j = r.json()
+        for area in j.values():
+            if 'codes' in area and 'iso3166_1' in area['codes']:
+                mapit.used = True
+                return area['codes']['iso3166_1']
     return None
 
 def source_from_grid(grid, e, n, digits):
@@ -83,7 +90,8 @@ def source_from_grid(grid, e, n, digits):
         src += "-irishgrid({})".format(igr_from_en(e, n, digits))
     return src
 
-def location_from_grid(grid, e, n, digits, view_direction, use6fig):
+def location_from_grid(grid, e, n, digits, view_direction, use6fig,
+                       mapit = None):
     # A grid reference in textual form, like SO8001, represents a
     # square on the ground whose size depends on the number of digits.
     # So SO8001 is the 1km square whose SW corner is at
@@ -107,7 +115,7 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     if use6fig: prec = max(prec, 100)
     precstr = "{:g}".format(prec)
     paramstr = "source:" + source_from_grid(grid, e, n, digits)
-    region = region_of(grid, e, n, lat, lon)
+    region = region_of(grid, e, n, lat, lon, mapit)
     if region != None:
         paramstr += "_region:{}".format(region)
     if view_direction != None:
@@ -119,7 +127,7 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig):
     t.add('prec', precstr)
     return t
 
-def location_from_row(row):
+def location_from_row(row, mapit = None):
     # Row is assumed to be a database row.
     grids = { 1: bng, 2: ig }
     grid = grids[row['reference_index']]
@@ -149,10 +157,10 @@ def location_from_row(row):
     heading = int(row['view_direction'])
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
-    t = location_from_grid(grid, e, n, digits, heading, use6fig)
+    t = location_from_grid(grid, e, n, digits, heading, use6fig, mapit)
     return t
 
-def object_location_from_row(row):
+def object_location_from_row(row, mapit = None):
     # The "subject location" in Geograph isn't necessarily the main
     # subject of the image:
     #
@@ -170,7 +178,7 @@ def object_location_from_row(row):
     heading = int(row['view_direction'])
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
-    t = location_from_grid(grid, e, n, digits, heading, use6fig)
+    t = location_from_grid(grid, e, n, digits, heading, use6fig, mapit)
     t.name = mwparserfromhell.parse("Object location")
     return t
 
