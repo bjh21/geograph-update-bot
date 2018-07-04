@@ -51,7 +51,6 @@ def RossUploads(parameters = None, **kwargs):
 def find_undersized():
     for item in RossUploads():
         fi = item.latest_file_info
-        if fi.width != 768: continue
         tree = mwparserfromhell.parse(item.text)
         try:
             geograph_template = tlgetone(tree, ['Geograph'])
