@@ -17,7 +17,8 @@ from creditline import creditline_from_row, can_add_creditline, add_creditline
 from location import (location_from_row, object_location_from_row,
                       az_dist_between_locations, format_row,
                       format_direction, get_location, get_object_location,
-                      set_location, set_object_location, location_params)
+                      set_location, set_object_location, location_params,
+                      MapItSettings)
 
 from gubutil import get_gridimage_id, TooManyTemplates, tlgetone
 
@@ -66,10 +67,12 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         location_replaced = False
         location_removed = False
         object_location_added = False
+        location_added = False
         creditline_added = False
         revid = page.latest_revision_id
         tree = mwparserfromhell.parse(page.text)
         gridimage_id = get_gridimage_id(tree)
+        mapit = MapItSettings()
         c = geodb.cursor()
         c.execute("""
             SELECT * FROM gridimage_base NATURAL JOIN gridimage_geo
@@ -90,10 +93,21 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             old_object_location = None
         new_location = location_from_row(row)
         minor = True
-        bot.log("Old: %s" % (old_location,))
-        bot.log("Old: %s" % (old_object_location,))
+        bot.log("Old cam: %s" % (old_location,))
+        bot.log("Old obj: %s" % (old_object_location,))
         oldcamparam = location_params(old_location)
         oldobjparam = location_params(old_object_location)
+        if old_location == None and old_object_location == None:
+            minor = False
+            mapit.allowed = True
+            # No geocoding at all: add from Geograph
+            new_location = location_from_row(row, mapit=mapit)
+            new_object_location = object_location_from_row(row, mapit=mapit)
+            if new_location and new_location.get('prec').value != '1000':
+                set_location(tree, new_location)
+                location_added = True
+            set_object_location(tree, new_object_location)
+            object_location_added = True
         creditline = creditline_from_row(row)
         if (can_add_creditline(tree, creditline) and
             self.unmodified_on_geograph_since_upload(page, row)):
@@ -105,11 +119,29 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         newtext = str(tree)
         if newtext != page.text:
             summary = ""
+            if location_added:
+                if object_location_added:
+                    summary = (
+                        "Add camera and object locations from Geograph (%s)" %
+                        (format_row(row),))
+                else:
+                    summary = ("Add camera location from Geograph (%s)" %
+                               (format_row(row),))
+            elif object_location_added:
+                summary = (
+                    "Add object location from Geograph (%s)" %
+                    (format_row(row),))
             if creditline_added:
                 if summary == "":
                     summary = "Add credit line with title from Geograph"
                 else:
                     summary += "; add credit line with title from Geograph"
+            if mapit.used:
+                # Requested credit where MapIt is used:
+                # 'Please attribute us with the text “Powered by Mapit”
+                # and a link back to the MapIt front page.'
+                summary += (
+                    " [powered by MapIt: http://global.mapit.mysociety.org]")
             bot.log("edit summary: %s" % (summary,))
             # Before we save, make sure pywikibot's view of the latest
             # revision hasn't changed.  If it has, that invalidates
