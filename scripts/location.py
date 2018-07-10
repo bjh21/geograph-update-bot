@@ -79,6 +79,10 @@ def region_of(grid, e, n, lat, lon, mapit = None):
         for area in j.values():
             if 'codes' in area and 'iso3166_1' in area['codes']:
                 mapit.used = True
+                if area['codes']['iso3166_1'] == 'GB':
+                    if grid == ig:
+                        return 'GB-NIR'
+                    return 'GB-GBN'
                 return area['codes']['iso3166_1']
     return None
 
