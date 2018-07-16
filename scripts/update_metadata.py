@@ -167,6 +167,13 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             bot.error(str(e))
 
 
+def NewGeographImages(parameters = None, **kwargs):
+    return api.PageGenerator("categorymembers", parameters=dict(
+        gcmtitle="Category:Images from Geograph Britain and Ireland",
+        gcmtype="file",
+        gcmsort="timestamp", gcmdir="older"),
+        **kwargs)
+
 def GeographBotUploads(parameters = None, **kwargs):
     if parameters == None: parameters = { }
     parameters['gaiuser'] = 'GeographBot'
@@ -197,8 +204,8 @@ def main(*args):
     # pages from the wiki simultaneously.
     gen = genFactory.getCombinedGenerator(preload=True)
     if not gen:
-        gen = PreloadingGenerator(GeographBotUploads(site=pywikibot.Site(),
-                                                     parameters=extraparams))
+        gen = PreloadingGenerator(NewGeographImages(site=pywikibot.Site(),
+                                                    parameters=extraparams))
     if gen:
         # pass generator and private options to the bot
         bot = UpdateMetadataBot(gen, **options)
