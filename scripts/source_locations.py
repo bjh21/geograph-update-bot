@@ -84,7 +84,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             "[https://tools.wmflabs.org/geograph2commons/ geograph2commons]"):
             # Would like to check tag, but pywikibot doesn't seem to
             # expose it.
-            reason = "set at upload by geograph2commons"
+            reason = "set at upload by [[toollabs:geograph2commons]]"
         elif (firstrev.user == "File Upload Bot (Magnus Manske)"):
             reason = "set at upload by [[User:File Upload Bot (Magnus Manske)]]"
 
