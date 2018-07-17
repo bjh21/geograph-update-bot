@@ -54,7 +54,7 @@ def find_rejected(**kwargs):
                           file=outfile, flush=True)
                     destid = int(urlsplit(r.url).path.rpartition('/')[2])
                     if titles_by_id[destid]:
-                        print("** ([[%s]])" % (titles_by_id[destid],),
+                        print("** ([[:%s]])" % (titles_by_id[destid],),
                               file=outfile, flush=True)
         except Exception:
             pass
