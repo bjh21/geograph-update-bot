@@ -50,12 +50,13 @@ def find_rejected(**kwargs):
                     'https://www.geograph.org.uk/photo/%d' % (gridimage_id,),
                     allow_redirects=True)
                 if r.status_code == 200:
-                    print("** redirected to %s" % (r.url,),
-                          file=outfile, flush=True)
                     destid = int(urlsplit(r.url).path.rpartition('/')[2])
                     if titles_by_id[destid]:
-                        print("** ([[:%s]])" % (titles_by_id[destid],),
+                        print("** → [%s %d]: [[:%s]]" %
+                              (r.url, destid, titles_by_id[destid]),
                               file=outfile, flush=True)
+                    print("** → [%s %d]" % (r.url, destid),
+                          file=outfile, flush=True)
         except Exception:
             pass
 
