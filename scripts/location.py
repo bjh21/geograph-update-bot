@@ -152,6 +152,11 @@ def location_from_row(row, mapit = None):
         digits = 4
     else:
         return None
+    # Consensus on Commons seems to be that 1km is not sufficient for
+    # camera location, but is acceptable for object location if that's
+    # all we've got.
+    if digits == 4:
+        return None
     # The Geograph view direction is probably specified in grid space
     # rather than as a true heading.  Happily, the difference in the
     # second-worst place (Soay) is only 5°, which isn't really
@@ -179,6 +184,11 @@ def object_location_from_row(row, mapit = None):
     else:
         e, n = en_from_gr(row['grid_reference'])
         digits = int(row['natgrlen'])
+    # Consensus on Commons seems to be that 1km is not sufficient for
+    # camera location, but is acceptable for object location if that's
+    # all we've got.
+    if digits == 4 and location_from_row(row) != None:
+        return None
     heading = int(row['view_direction'])
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
