@@ -64,10 +64,12 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 (commons_dt, geograph_dt))
         return geograph_dt < commons_dt
     def process_page(self, page):
+        location_added = False
         location_replaced = False
         location_removed = False
         object_location_added = False
-        location_added = False
+        object_location_replaced = False
+        object_location_removed = False
         creditline_added = False
         revid = page.latest_revision_id
         tree = mwparserfromhell.parse(page.text)
@@ -91,7 +93,6 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             old_object_location = get_object_location(tree)
         except IndexError:
             old_object_location = None
-        new_location = location_from_row(row)
         minor = True
         bot.log("Old cam: %s" % (old_location,))
         bot.log("Old obj: %s" % (old_object_location,))
@@ -108,6 +109,63 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 location_added = True
             set_object_location(tree, new_object_location)
             object_location_added = True
+        else:
+            if ((old_location == None or
+                 re.match(r'^geograph(-|$)', oldcamparam.get('source',''))) and
+                (old_object_location == None or
+                 re.match(r'^geograph(-|$)', oldobjparam.get('source','')))):
+                bot.log("Old geocoding is from Geograph")
+                # Existing geocoding all from Geograph, so updating
+                # from Geograph OK if needed.
+                new_location = location_from_row(row, mapit=mapit)
+                newcamparam = location_params(new_location)
+                new_object_location = object_location_from_row(row, mapit=mapit)
+                newobjparam = location_params(new_object_location)
+                # We generally want to synchronise with Geograph.
+                should_set_cam = True
+                should_set_obj = True
+                # but not yet if old template has no gridref
+                if (old_location != None
+                    and '-' not in oldcamparam['source']):
+                    should_set_cam = False
+                    bot.log("No existing camera gridref: not updating")
+                if (old_object_location != None
+                    and '-' not in oldobjparam['source']):
+                    should_set_obj = False
+                    bot.log("No existing object gridref: not updating")
+                # and not if gridref hasn't changed
+                if (old_location != None and new_location != None
+                    and oldcamparam['source'] == newcamparam['source']):
+                    should_set_cam = False
+                    bot.log("Camera gridref unchanged: not updating")
+                if (old_object_location != None
+                    and new_object_location != None
+                    and oldobjparam['source'] == newobjparam['source']):
+                    should_set_obj = False
+                    bot.log("Object gridref unchanged: not updating")
+                # Do it if necessary:
+                mapit.allowed = True
+                if should_set_cam:
+                    set_location(tree, location_from_row(row, mapit=mapit))
+                    if old_location == None:
+                        if new_location != None:
+                            location_added = True
+                    else:
+                        if new_location == None:
+                            location_removed = True
+                        else:
+                            location_replaced = True
+                if should_set_obj:
+                    set_object_location(tree,
+                                    object_location_from_row(row, mapit=mapit))
+                    if old_object_location == None:
+                        if new_object_location != None:
+                            object_location_added = True
+                    else:
+                        if new_object_location == None:
+                            object_location_removed = True
+                        else:
+                            object_location_replaced = True
         creditline = creditline_from_row(row)
         if (can_add_creditline(tree, creditline) and
             self.unmodified_on_geograph_since_upload(page, row)):
@@ -124,13 +182,67 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     summary = (
                         "Add camera and object locations from Geograph (%s)" %
                         (format_row(row),))
+                elif object_location_replaced:
+                    summary = (
+                        "Add camera location and update object location, "
+                        "both from Geograph (%s)" %
+                        (format_row(row),))
+                elif object_location_removed:
+                    summary = (
+                        "Add camera location from Geograph "
+                        "and remove Geograph-derived 1km-precision "
+                        "object location" %
+                        (format_row(row),))                    
                 else:
                     summary = ("Add camera location from Geograph (%s)" %
                                (format_row(row),))
+            elif location_replaced:
+                if object_location_added:
+                    summary = (
+                        "Update camera location and add object location, "
+                        "both from Geograph (%s)" %
+                        (format_row(row),))
+                elif object_location_replaced:
+                    summary = (
+                        "Update camera and object locations from Geograph "
+                        "(%s)" %
+                        (format_row(row),))
+                elif object_location_removed:
+                    summary = (
+                        "Update camera location from Geograph "
+                        "and remove Geograph-derived 1km-precision "
+                        "object location" %
+                        (format_row(row),))                    
+                else:
+                    summary = ("Update camera location from Geograph (%s)" %
+                               (format_row(row),))
+            elif location_removed:
+                if object_location_added:
+                    summary = (
+                        "Remove Geograph-derived camera location "
+                        "(no longer on Geograph, or 1km precision) "
+                        "and add object location from Geograph (%s)" %
+                        (format_row(row),))
+                elif object_location_replaced:
+                    summary = (
+                        "Remove Geograph-derived camera location "
+                        "(no longer on Geograph, or 1km precision) "
+                        "and update object location from Geograph (%s)" %
+                        (format_row(row),))
+                else:
+                    summary = (
+                        "Remove Geograph-derived camera location "
+                        "(no longer on Geograph, or 1km precision)")
             elif object_location_added:
                 summary = (
                     "Add object location from Geograph (%s)" %
                     (format_row(row),))
+            elif object_location_replaced:
+                summary = ("Update object location from Geograph (%s)" %
+                           (format_row(row),))
+            elif object_location_removed:
+                summary = ("Remove Geograph-derived 1km-precision "
+                           "object location")
             if creditline_added:
                 if summary == "":
                     summary = "Add credit line with title from Geograph"
