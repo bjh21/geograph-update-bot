@@ -41,10 +41,22 @@ def get_geograph_basic(gridimage_id, info):
     r.raise_for_status()
     return r.content
 
+def get_geograph_size(gridimage_id, info, size):
+    url = get_geograph_size_url(gridimage_id, info, size)
+    bot.log("Fetching from %s" % (url,))
+    r = client.get(url)
+    r.raise_for_status()
+    return r.content
+
 class StrangeURL(Exception):
     pass
 
 def get_geograph_full_url(gridimage_id, info):
+    return get_geograph_size_url(gridimage_id, info, 'original')
+
+def get_geograph_size_url(gridimage_id, info, size):
+    if size != 'original' and size <= 640:
+        return info['url']
     # Evil hack, but better than digging it out of HTML.
     m = re.search(r"_([0-9a-f]{8})\.jpg$", info['url'])
     if not m:
@@ -54,7 +66,7 @@ def get_geograph_full_url(gridimage_id, info):
     return ("https://www.geograph.org.uk/reuse.php?" +
             urlencode({'id': gridimage_id,
                        'download': imgkey,
-                       'size': 'original'}))
+                       'size': size}))
 
 def get_geograph_full(gridimage_id, info):
     url = get_geograph_full_url(gridimage_id, info)
@@ -125,16 +137,18 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                              'original_height', 'original_diff')]
         if original_width == 0:
             raise NotEligible("no high-res version available")
-        if original_diff == 'yes':
-            raise NotEligible("Geograph says pictures are different")
-        if not aspect_ratios_match(gwidth, gheight,
+        fi = page.latest_file_info
+        bot.log("%d × %d version available" % (original_width, original_height))
+        bot.log("current Commons version is %d × %d" % (fi.width, fi.height))
+        if not aspect_ratios_match(fi.width, fi.height,
                                    original_width, original_height):
             raise NotEligible("aspect ratios of images differ")
-        bot.log("%d × %d version available" % (original_width, original_height))
-        fi = page.latest_file_info
-        bot.log("current Commons version is %d × %d" % (fi.width, fi.height))
-        if (fi.width, fi.height) != (gwidth, gheight):
-            raise NotEligible("dimensions do not match Geograph basic image")
+        if (fi.width, fi.height) == (gwidth, gheight):
+            if original_diff == 'yes':
+                raise NotEligible("Geograph says pictures are different")
+        else:
+            if max(fi.width, fi.height) not in (800, 1024):
+                raise NotEligible("dimensions do not match any Geograph image")
         geograph_info = get_geograph_info(gridimage_id)
         if (canonicalise_name(geograph_info['author_name']) !=
             canonicalise_name(commons_author)):
@@ -155,9 +169,11 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 raise NotEligible("title does not match Geograph (%s vs. %s)" %
                                   (repr(commons_title),
                                    repr(geograph_info['title'])))
-        basic_image = get_geograph_basic(gridimage_id, geograph_info)
-        if hashlib.sha1(basic_image).hexdigest() != fi.sha1:
-            raise NotEligible("SHA-1 does not match Geograph basic image.")
+        geograph_image = get_geograph_size(gridimage_id, geograph_info,
+                                           max(fi.width, fi.height))
+        if hashlib.sha1(geograph_image).hexdigest() != fi.sha1:
+            raise NotEligible("SHA-1 does not match Geograph %d px image." %
+                              ( max(fi.width, fi.height),))
         bot.log("Image matches. Update possible.")
         self.replace_file(page, get_geograph_full_url(gridimage_id,
                                                       geograph_info))
