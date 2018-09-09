@@ -69,7 +69,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         # We generally want to synchronise with Geograph.
         should_set = True
         # but not yet if old template has no gridref
-        if (old_template != None
+        if (old_template != None and new_template != None
             and '-' not in oldparam['source']):
             if old_template.has(4):
                 should_set = False
@@ -89,6 +89,10 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             bot.log("%s gridref unchanged: not updating" %
                     (desc.capitalize(),))
         return should_set
+    def describe_move(self, old_template, new_template):
+        azon, azno, distance = (
+            az_dist_between_locations(old_template, new_template))
+        return "moved %.1f m %s" % (distance, format_direction(azon))
     def process_page(self, page):
         location_added = False
         location_replaced = False
@@ -195,9 +199,10 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                         (format_row(row),))
                 elif object_location_replaced:
                     summary = (
-                        "Add camera location and update object location, "
+                        "Add camera location and update object location (%s), "
                         "both from Geograph (%s)" %
-                        (format_row(row),))
+                        (self.describe_move(old_location, new_location),
+                         format_row(row)))
                 elif object_location_removed:
                     summary = (
                         "Add camera location from Geograph "
@@ -210,23 +215,31 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             elif location_replaced:
                 if object_location_added:
                     summary = (
-                        "Update camera location and add object location, "
+                        "Update camera location (%s) and add object location, "
                         "both from Geograph (%s)" %
-                        (format_row(row),))
+                        (self.describe_move(old_location, new_location),
+                         format_row(row)))
                 elif object_location_replaced:
                     summary = (
-                        "Update camera and object locations from Geograph "
-                        "(%s)" %
-                        (format_row(row),))
+                        "Update camera and object locations "
+                        "(%s and %s, respectively) "
+                        "from Geograph (%s)" %
+                        (self.describe_move(old_location, new_location),
+                         self.describe_move(old_object_location,
+                                            new_object_location),
+                         format_row(row)))
                 elif object_location_removed:
                     summary = (
-                        "Update camera location from Geograph "
+                        "Update camera location (%s) from Geograph "
                         "and remove Geograph-derived 1km-precision "
                         "object location" %
-                        (format_row(row),))                    
+                        (self_describe_move(old_location, new_location),
+                         format_row(row)))
                 else:
-                    summary = ("Update camera location from Geograph (%s)" %
-                               (format_row(row),))
+                    summary = (
+                        "Update camera location (%s) from Geograph (%s)" %
+                        (self.describe_move(old_location, new_location),
+                         format_row(row)))
             elif location_removed:
                 if object_location_added:
                     summary = (
@@ -238,8 +251,10 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     summary = (
                         "Remove Geograph-derived camera location "
                         "(no longer on Geograph, or 1km precision) "
-                        "and update object location from Geograph (%s)" %
-                        (format_row(row),))
+                        "and update object location (%s) from Geograph (%s)" %
+                        (self.describe_move(old_object_location,
+                                            new_object_location),
+                         format_row(row)))
                 else:
                     summary = (
                         "Remove Geograph-derived camera location "
@@ -249,8 +264,10 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     "Add object location from Geograph (%s)" %
                     (format_row(row),))
             elif object_location_replaced:
-                summary = ("Update object location from Geograph (%s)" %
-                           (format_row(row),))
+                summary = ("Update object location (%s) from Geograph (%s)" %
+                           (self.describe_move(old_object_location,
+                                               new_object_location),
+                            format_row(row)))
             elif object_location_removed:
                 summary = ("Remove Geograph-derived 1km-precision "
                            "object location")
