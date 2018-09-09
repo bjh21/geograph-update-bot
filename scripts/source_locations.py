@@ -81,8 +81,13 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise NotEligible("location added since upload")
         if old_location != first_location:
             raise NotEligible("location changed since upload")
-        if (firstrev.comment == "Transferred from geograph.co.uk using "
-            "[https://tools.wmflabs.org/geograph2commons/ geograph2commons]"):
+        bot.log("First comment: %s" % (repr(firstrev.comment),))
+        if (firstrev.comment in
+            ("Transferred from geograph.co.uk using "
+             "[https://tools.wmflabs.org/geograph2commons/ geograph2commons]",
+             # Some uploads have this curious typo'd version of the summary.
+             "Transferred from geograph.co.uk using "
+             "[https://tools.wmflabs.org/geograph2commons/ grograph2commons]")):
             # Would like to check tag, but pywikibot doesn't seem to
             # expose it.
             reason = ("set at upload by "
