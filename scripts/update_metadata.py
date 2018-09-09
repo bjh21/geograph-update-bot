@@ -73,7 +73,11 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         creditline_added = False
         revid = page.latest_revision_id
         tree = mwparserfromhell.parse(page.text)
-        gridimage_id = get_gridimage_id(tree)
+        try:
+            gridimage_id = get_gridimage_id(tree)
+        except ValueError as e:
+            raise BadTemplate(str(e))
+            
         mapit = MapItSettings()
         c = geodb.cursor()
         c.execute("""
@@ -93,7 +97,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             old_object_location = get_object_location(tree)
         except IndexError:
             old_object_location = None
-        minor = True
+        minor = False # May need fixing
         bot.log("Old cam: %s" % (old_location,))
         bot.log("Old obj: %s" % (old_object_location,))
         oldcamparam = location_params(old_location)
