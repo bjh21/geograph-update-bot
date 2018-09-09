@@ -63,6 +63,23 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         bot.log("Commons timestamp: %s; Geograph timestamp: %s" %
                 (commons_dt, geograph_dt))
         return geograph_dt < commons_dt
+    def should_set_location(self, old_template, new_template, desc):
+        oldparam = location_params(old_template)
+        newparam = location_params(new_template)
+        # We generally want to synchronise with Geograph.
+        should_set = True
+        # but not yet if old template has no gridref
+        if (old_template != None
+            and '-' not in oldparam['source']):
+            should_set = False
+            bot.log("No existing %s gridref: not updating" % (desc,))
+        # and not if gridref hasn't changed
+        if (old_template != None and new_template != None
+            and oldparam['source'] == newparam['source']):
+            should_set = False
+            bot.log("%s gridref unchanged: not updating" %
+                    (desc.capitalize(),))
+        return should_set
     def process_page(self, page):
         location_added = False
         location_replaced = False
@@ -100,8 +117,6 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         minor = False # May need fixing
         bot.log("Old cam: %s" % (old_location,))
         bot.log("Old obj: %s" % (old_object_location,))
-        oldcamparam = location_params(old_location)
-        oldobjparam = location_params(old_object_location)
         if old_location == None and old_object_location == None:
             minor = False
             mapit.allowed = True
@@ -114,6 +129,8 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             set_object_location(tree, new_object_location)
             object_location_added = True
         else:
+            oldcamparam = location_params(old_location)
+            oldobjparam = location_params(old_object_location)
             if ((old_location == None or
                  re.match(r'^geograph(-|$)', oldcamparam.get('source',''))) and
                 (old_object_location == None or
@@ -122,31 +139,12 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 # Existing geocoding all from Geograph, so updating
                 # from Geograph OK if needed.
                 new_location = location_from_row(row, mapit=mapit)
-                newcamparam = location_params(new_location)
                 new_object_location = object_location_from_row(row, mapit=mapit)
-                newobjparam = location_params(new_object_location)
-                # We generally want to synchronise with Geograph.
-                should_set_cam = True
-                should_set_obj = True
-                # but not yet if old template has no gridref
-                if (old_location != None
-                    and '-' not in oldcamparam['source']):
-                    should_set_cam = False
-                    bot.log("No existing camera gridref: not updating")
-                if (old_object_location != None
-                    and '-' not in oldobjparam['source']):
-                    should_set_obj = False
-                    bot.log("No existing object gridref: not updating")
-                # and not if gridref hasn't changed
-                if (old_location != None and new_location != None
-                    and oldcamparam['source'] == newcamparam['source']):
-                    should_set_cam = False
-                    bot.log("Camera gridref unchanged: not updating")
-                if (old_object_location != None
-                    and new_object_location != None
-                    and oldobjparam['source'] == newobjparam['source']):
-                    should_set_obj = False
-                    bot.log("Object gridref unchanged: not updating")
+                # Should we update locations?
+                should_set_cam = self.should_set_location(
+                    old_location, new_location, "camera")
+                should_set_obj = self.should_set_location(
+                    old_object_location, new_object_location, "object")
                 # Do it if necessary:
                 mapit.allowed = True
                 if should_set_cam:
