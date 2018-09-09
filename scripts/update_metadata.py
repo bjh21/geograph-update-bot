@@ -71,8 +71,17 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         # but not yet if old template has no gridref
         if (old_template != None
             and '-' not in oldparam['source']):
-            should_set = False
-            bot.log("No existing %s gridref: not updating" % (desc,))
+            if old_template.has(4):
+                should_set = False
+                bot.log("%s template is DMS with no gridref: not updating" %
+                        (desc.capitalize(),))
+            else:
+                (azon, azno, dist) = az_dist_between_locations(
+                    old_template, new_template)
+                if dist < 1000:
+                    bot.log("%s has only moved by %d m: not updating"
+                            % (desc.capitalize(), dist))
+                    should_set = False
         # and not if gridref hasn't changed
         if (old_template != None and new_template != None
             and oldparam['source'] == newparam['source']):
