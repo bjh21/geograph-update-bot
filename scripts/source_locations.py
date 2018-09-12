@@ -81,7 +81,6 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise NotEligible("location added since upload")
         if old_location != first_location:
             raise NotEligible("location changed since upload")
-        bot.log("First comment: %s" % (repr(firstrev.comment),))
         if (firstrev.comment in
             ("Transferred from geograph.co.uk using "
              "[https://tools.wmflabs.org/geograph2commons/ geograph2commons]",
