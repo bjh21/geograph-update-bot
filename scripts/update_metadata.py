@@ -78,7 +78,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             else:
                 (azon, azno, dist) = az_dist_between_locations(
                     old_template, new_template)
-                if dist < 1000:
+                if dist < int(str(new_template.get('prec').value)):
                     bot.log("%s has only moved by %d m: not updating"
                             % (desc.capitalize(), dist))
                     should_set = False
