@@ -27,7 +27,7 @@ from gubutil import get_gridimage_id, TooManyTemplates, tlgetone
 # File Upload Bot (Magnus Manske)
 # Geograph2commons
 
-geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
+geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
 
 class NotEligible(Exception):

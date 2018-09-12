@@ -20,7 +20,7 @@ import mwparserfromhell
 
 from gubutil import canonicalise_name, tlgetone
 
-geodb = sqlite3.connect('../geograph-db/geograph.sqlite3')
+geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
 
 client = requests.Session()
