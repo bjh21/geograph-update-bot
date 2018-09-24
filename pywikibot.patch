@@ -1,0 +1,13 @@
+diff --git a/pywikibot/site.py b/pywikibot/site.py
+index 0adfbccc..ef34e9db 100644
+--- a/pywikibot/site.py
++++ b/pywikibot/site.py
+@@ -6455,7 +6455,7 @@ class APISite(BaseSite):
+                 pywikibot.warning('No filekey defined.')
+             if not report_success:
+                 if 'offset' not in result:
+-                    result['offset'] = True
++                    result['offset'] = False
+                 if ignore_warnings(create_warnings_list(result)):
+                     return self.upload(
+                         filepage, source_filename, source_url, comment, text,
