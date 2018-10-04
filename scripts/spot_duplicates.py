@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import hashlib
+from io import StringIO
 import pywikibot
 from pywikibot.bot import (
     SingleSiteBot, ExistingPageBot, NoRedirectPageBot, AutomaticTWSummaryBot)
@@ -16,7 +17,7 @@ site = pywikibot.Site()
 
 def find_duplicates(**kwargs):
     last_id = dup_id = -1
-    outfile = open("duplicates.txt", "w")
+    outfile = StringIO()
     for item in api.ListGenerator("categorymembers",
             cmtitle="Category:Images from Geograph Britain and Ireland",
             cmprop="title|sortkeyprefix", cmtype="file", **kwargs):
@@ -35,8 +36,13 @@ def find_duplicates(**kwargs):
             last_title = item['title']
         except Exception:
             pass
-        
-    
+    reportpage = pywikibot.Page(pywikibot.Site(),
+                "User:Geograph Update Bot/duplicate Geograph IDs/data")
+    reportpage.text = (
+        "<!-- This page will be overwritten by Geograph Update Bot -->")
+    reportpage.text += outfile.getvalue()
+    reportpage.save("New list of duplicate IDs")
+
 def main(*args):
     options = {}
     # Process global arguments to determine desired site

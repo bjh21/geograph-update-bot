@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import hashlib
+from io import StringIO
 import pywikibot
 from pywikibot.bot import (
     SingleSiteBot, ExistingPageBot, NoRedirectPageBot, AutomaticTWSummaryBot)
@@ -21,7 +22,7 @@ client = requests.Session()
 client.headers['User-Agent'] = "spot_rejected (bjh21@bjh21.me.uk)"
 
 def find_rejected(**kwargs):
-    outfile = open("rejected.txt", "w")
+    outfile = StringIO()
     c = geodb.cursor()
     c.execute("""
         SELECT MAX(gridimage_id) FROM gridimage_base
@@ -59,6 +60,12 @@ def find_rejected(**kwargs):
                           file=outfile, flush=True)
         except Exception:
             pass
+    reportpage = pywikibot.Page(pywikibot.Site(),
+                "User:Geograph Update Bot/images rejected from Geograph/data")
+    reportpage.text = (
+        "<!-- This page will be overwritten by Geograph Update Bot -->")
+    reportpage.text += outfile.getvalue()
+    reportpage.save("New list of rejected IDs")
 
 def main(*args):
     options = {}
