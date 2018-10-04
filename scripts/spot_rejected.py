@@ -60,4 +60,35 @@ def find_rejected(**kwargs):
         except Exception:
             pass
 
-find_rejected()
+def main(*args):
+    options = {}
+    # Process global arguments to determine desired site
+    local_args = pywikibot.handle_args(args)
+
+    # This factory is responsible for processing command line arguments
+    # that are also used by other scripts and that determine on which pages
+    # to work on.
+    genFactory = pywikibot.pagegenerators.GeneratorFactory()
+
+    # Parse command line arguments
+    for arg in local_args:
+
+        # Catch the pywikibot.pagegenerators options
+        if genFactory.handleArg(arg):
+            continue  # nothing to do here
+    find_rejected()
+    return
+    # The preloading option is responsible for downloading multiple
+    # pages from the wiki simultaneously.
+    gen = genFactory.getCombinedGenerator(preload=True)
+    if not gen:
+        gen = InterestingGeographGenerator()
+    if gen:
+        # pass generator and private options to the bot
+        bot = UpgradeSizeBot(gen, **options)
+        bot.run()  # guess what it does
+        return True
+    else:
+        pywikibot.bot.suggest_help(missing_generator=True)
+        return False
+main()
