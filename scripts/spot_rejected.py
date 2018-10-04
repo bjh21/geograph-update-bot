@@ -1,28 +1,23 @@
 from __future__ import print_function
 
-import hashlib
 from io import StringIO
 import pywikibot
-from pywikibot.bot import (
-    SingleSiteBot, ExistingPageBot, NoRedirectPageBot, AutomaticTWSummaryBot)
 import pywikibot.bot as bot
 import pywikibot.data.api as api
 import pywikibot.pagegenerators
-import re
 import requests
 import sqlite3
-import tempfile
 from urllib.parse import urlsplit
 
-site = pywikibot.Site()
 geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
 
 client = requests.Session()
 client.headers['User-Agent'] = "spot_rejected (bjh21@bjh21.me.uk)"
 
-def find_rejected(**kwargs):
+def find_rejected():
     outfile = StringIO()
+    site = pywikibot.Site()
     c = geodb.cursor()
     c.execute("""
         SELECT MAX(gridimage_id) FROM gridimage_base
@@ -32,7 +27,7 @@ def find_rejected(**kwargs):
     titles_by_id = { }
     for item in api.ListGenerator("categorymembers", site=site,
             cmtitle="Category:Images from Geograph Britain and Ireland",
-            cmprop="title|sortkeyprefix", cmtype="file", **kwargs):
+            cmprop="title|sortkeyprefix", cmtype="file"):
         try:
             gridimage_id = int(item['sortkeyprefix'])
             titles_by_id[gridimage_id] = item['title']
@@ -60,7 +55,7 @@ def find_rejected(**kwargs):
                           file=outfile, flush=True)
         except Exception:
             pass
-    reportpage = pywikibot.Page(pywikibot.Site(),
+    reportpage = pywikibot.Page(site,
                 "User:Geograph Update Bot/images rejected from Geograph/data")
     reportpage.text = (
         "<!-- This page will be overwritten by Geograph Update Bot -->")
@@ -68,34 +63,9 @@ def find_rejected(**kwargs):
     reportpage.save("New list of rejected IDs")
 
 def main(*args):
-    options = {}
     # Process global arguments to determine desired site
     local_args = pywikibot.handle_args(args)
 
-    # This factory is responsible for processing command line arguments
-    # that are also used by other scripts and that determine on which pages
-    # to work on.
-    genFactory = pywikibot.pagegenerators.GeneratorFactory()
-
-    # Parse command line arguments
-    for arg in local_args:
-
-        # Catch the pywikibot.pagegenerators options
-        if genFactory.handleArg(arg):
-            continue  # nothing to do here
     find_rejected()
-    return
-    # The preloading option is responsible for downloading multiple
-    # pages from the wiki simultaneously.
-    gen = genFactory.getCombinedGenerator(preload=True)
-    if not gen:
-        gen = InterestingGeographGenerator()
-    if gen:
-        # pass generator and private options to the bot
-        bot = UpgradeSizeBot(gen, **options)
-        bot.run()  # guess what it does
-        return True
-    else:
-        pywikibot.bot.suggest_help(missing_generator=True)
-        return False
+
 main()
