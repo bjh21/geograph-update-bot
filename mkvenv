@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -euo pipefail
+
 venv="${1}"
 
 virtualenv --python=python3 --system-site-packages "${venv}"
