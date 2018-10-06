@@ -1,5 +1,5 @@
 # pip requirements for running geograph-update-bot
-dateutil
+python-dateutil
 mwparserfromhell
 pywikibot
 requests
