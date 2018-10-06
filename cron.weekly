@@ -1,0 +1,19 @@
+#! /bin/bash
+
+set -euo pipefail
+
+suffix=geograph-update-bot
+srcdir=/home/bjh21/geograph-update-bot
+workdir="/quicksand/bjharris.${suffix}"
+
+quicksand-setup --rmdir "${suffix}" || true
+quicksand-setup --mkdir "${suffix}"
+
+cp -a "${srcdir}" "${workdir}"
+cd "${workdir}"
+
+./mkvenv venv
+
+( cd geograph-db && ./geograph_fetch && ./geograph_import )
+
+# XXX actually run bot here.
