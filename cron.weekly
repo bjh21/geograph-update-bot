@@ -3,7 +3,7 @@
 set -euo pipefail
 
 suffix=geograph-update-bot
-srcdir=/home/bjh21/geograph-update-bot
+srcdir=/home/bjharris/geograph-update-bot
 workdir="/quicksand/bjharris.${suffix}"
 
 quicksand-setup --rmdir "${workdir}" || true
