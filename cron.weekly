@@ -6,6 +6,7 @@ suffix=geograph-update-bot
 srcdir=/home/bjharris/geograph-update-bot
 workdir="/quicksand/bjharris.${suffix}"
 
+rm -rf "${workdir}/." || true
 quicksand-setup --rmdir "${workdir}" || true
 quicksand-setup --mkdir "${workdir}"
 
