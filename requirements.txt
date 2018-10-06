@@ -1,0 +1,5 @@
+# pip requirements for running geograph-update-bot
+mwparserfromhell
+pywikibot
+requests
+requests-oauthlib

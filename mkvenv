@@ -5,8 +5,7 @@ set -euo pipefail
 venv="${1}"
 
 virtualenv --python=python3 --system-site-packages "${venv}"
-"${venv}"/bin/pip install mwparserfromhell
-"${venv}"/bin/pip install pywikibot
+"${venv}"/bin/pip install -r requirements.txt
 
 patch -d "${venv}"/lib/python3.*/site-packages --binary -p1 \
     < pywikibot.patch
