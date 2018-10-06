@@ -9,7 +9,7 @@ workdir="/quicksand/bjharris.${suffix}"
 quicksand-setup --rmdir "${workdir}" || true
 quicksand-setup --mkdir "${workdir}"
 
-cp -a "${srcdir}" "${workdir}"
+cp -a "${srcdir}/." "${workdir}"
 cd "${workdir}"
 
 ./mkvenv venv
