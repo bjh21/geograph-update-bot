@@ -6,8 +6,8 @@ suffix=geograph-update-bot
 srcdir=/home/bjh21/geograph-update-bot
 workdir="/quicksand/bjharris.${suffix}"
 
-quicksand-setup --rmdir "${suffix}" || true
-quicksand-setup --mkdir "${suffix}"
+quicksand-setup --rmdir "${workdir}" || true
+quicksand-setup --mkdir "${workdir}"
 
 cp -a "${srcdir}" "${workdir}"
 cd "${workdir}"
