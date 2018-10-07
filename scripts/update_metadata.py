@@ -206,7 +206,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                          format_row(row)))
                 elif object_location_removed:
                     summary = (
-                        "Add camera location from Geograph (%s)"
+                        "Add camera location from Geograph (%s) "
                         "and remove Geograph-derived 1km-precision "
                         "object location" %
                         (format_row(row),))                    
