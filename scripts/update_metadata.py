@@ -234,7 +234,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                         "Update camera location (%s) from Geograph "
                         "and remove Geograph-derived 1km-precision "
                         "object location" %
-                        (self_describe_move(old_location, new_location),
+                        (self.describe_move(old_location, new_location),
                          format_row(row)))
                 else:
                     summary = (
