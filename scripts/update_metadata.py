@@ -201,7 +201,8 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     summary = (
                         "Add camera location and update object location (%s), "
                         "both from Geograph (%s)" %
-                        (self.describe_move(old_location, new_location),
+                        (self.describe_move(old_object_location,
+                                            new_object_location),
                          format_row(row)))
                 elif object_location_removed:
                     summary = (
