@@ -71,6 +71,19 @@ class MapItSettings(object):
         self.used = False
 
 def region_of(grid, e, n, lat, lon, mapit = None):
+    # First, see if it's obvious.  Look for a myriad wholly within a single
+    # region (including territorial waters).
+    myriad = None
+    if grid == bng:
+        myriad = bngr_from_en(e, n, 0)
+        if myriad in ('NG', 'NH', 'NM', 'NN', 'NS'): return 'GB-SCT'
+        if myriad == 'NY': return 'GB-GBN' # Spans England/Scotland border
+        if myriad in ('SJ', 'SO', 'ST'): return 'GB-EAW' # England/Wales
+        if myriad in ('SE', 'SK', 'SP', 'SS', 'SU', 'TL', 'TQ'):
+            return 'GB-ENG'
+    if grid == ig:
+        if igr_from_en(e, n, 0) in ('M', 'N', 'R', 'S'): return 'IE'
+    
     if mapit and mapit.allowed:
         r = requests.get('http://global.mapit.mysociety.org'
                          '/point/4326/{:f},{:f}'.format(lon,lat))
