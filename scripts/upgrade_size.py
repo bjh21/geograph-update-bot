@@ -255,8 +255,8 @@ def InterestingGeographsByNumber(**kwargs):
         n = n + 1;
         if (n % 50 == 0):
             # Write a checkpoint every fifty yielded items
-            startpage.text = str(gridimage_id)
-            startpage.save("Checkpoint: up to %d" % (gridimage_id,))
+            startpage.text = str(page.gridimage_id)
+            startpage.save("Checkpoint: up to %d" % (page.gridimage_id,))
 
 def InterestingGeographsByDate(**kwargs):
     site = kwargs['site']
