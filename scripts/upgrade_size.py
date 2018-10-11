@@ -321,6 +321,7 @@ def main(*args):
     # to work on.
     genFactory = pywikibot.pagegenerators.GeneratorFactory()
 
+    gen = None
     # Parse command line arguments
     for arg in local_args:
 
