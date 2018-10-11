@@ -327,9 +327,12 @@ def main(*args):
         # Catch the pywikibot.pagegenerators options
         if genFactory.handleArg(arg):
             continue  # nothing to do here
+        if arg == '-bynumber':
+            gen = InterestingGeographsByNumber(site=pywikibot.Site())
     # The preloading option is responsible for downloading multiple
     # pages from the wiki simultaneously.
-    gen = genFactory.getCombinedGenerator(preload=True)
+    if not gen:
+        gen = genFactory.getCombinedGenerator(preload=True)
     if not gen:
         gen = InterestingGeographsByDate(site=pywikibot.Site())
     if gen:
