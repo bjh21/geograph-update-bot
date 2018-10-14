@@ -64,3 +64,35 @@ def GeographBotUploads(parameters = None, **kwargs):
     parameters['gaisort'] = 'timestamp'
     print(parameters)
     return api.PageGenerator("allimages", parameters=parameters, **kwargs)
+
+import sqlite3
+from dateutil.tz import gettz
+
+geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
+geodb.row_factory = sqlite3.Row
+
+def ModifiedGeographs(modified_since, submitted_before):
+    # Return images modified on Geograph since the specified start time
+    # (as a datetime).
+    c = geodb.cursor()
+    geograph_mod = (
+        modified_since.astimezone(gettz("Europe/London"))
+                      .strftime("%Y-%m-%d %H:%M:%S"))
+    geograph_sub = (
+        submitted_before.astimezone(gettz("Europe/London"))
+                        .strftime("%Y-%m-%d %H:%M:%S"))
+    c.execute("""
+        SELECT gridimage_id
+          FROM gridimage_extra
+         WHERE upd_timestamp >= ? AND submitted < ?
+        """, (geograph_mod, geograph_sub))
+    for row in c:
+        yield from PagesByGeographId(row['gridimage_id'])
+
+def PagesByGeographId(gridimage_id):
+    # Returns all pages with a given Geograph ID.
+    return api.PageGenerator("categorymembers", parameters=dict(
+        gcmtitle="Category:Images from Geograph Britain and Ireland",
+        gcmtype="file",
+        gcmstartsortkeyprefix=" %08d" % (gridimage_id,),
+        gcmendsortkeyprefix=" %08d" % (gridimage_id + 1,)))

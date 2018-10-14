@@ -9,6 +9,7 @@ import pywikibot.pagegenerators
 from pywikibot.pagegenerators import PreloadingGenerator
 from datetime import datetime, timedelta, timezone
 from dateutil.tz import gettz
+from itertools import chain
 from math import copysign
 import mwparserfromhell
 import re
@@ -22,7 +23,7 @@ from location import (location_from_row, object_location_from_row,
 
 from gubutil import (
     get_gridimage_id, TooManyTemplates, tlgetone, NewGeographImages,
-    GeographBotUploads)
+    GeographBotUploads, ModifiedGeographs)
 
 # Ways that Geograph locations get in:
 # BotMultichill (example?)
@@ -309,6 +310,17 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         except TooManyTemplates as e:
             bot.error(str(e))
 
+class GeoGeneratorFactory(pywikibot.pagegenerators.GeneratorFactory):
+    def _handle_recent(self, value):
+        starttime = datetime.now() - timedelta(days=int(value))
+        earlystart = starttime - timedelta(days=1)
+        extraparams = { 'gcmend': earlystart.astimezone(timezone.utc) }
+        new_on_commons = PreloadingGenerator(
+            NewGeographImages(site=pywikibot.Site(), parameters=extraparams))
+        changed_on_geograph = ModifiedGeographs(
+            modified_since = starttime, submitted_before = earlystart)
+        return chain(new_on_commons, changed_on_geograph)
+            
 def main(*args):
     options = {}
     # Process global arguments to determine desired site
@@ -317,7 +329,7 @@ def main(*args):
     # This factory is responsible for processing command line arguments
     # that are also used by other scripts and that determine on which pages
     # to work on.
-    genFactory = pywikibot.pagegenerators.GeneratorFactory()
+    genFactory = GeoGeneratorFactory()
 
     extraparams = { }
     # Parse command line arguments
@@ -328,9 +340,6 @@ def main(*args):
             continue  # nothing to do here
         if arg.startswith("-aistart:"):
             extraparams = { 'gaistart': arg[9:] }
-        if arg.startswith("-recent:"):
-            starttime = datetime.now() - timedelta(days=int(arg[8:]))
-            extraparams = { 'gcmend': starttime.astimezone(timezone.utc) }
     # The preloading option is responsible for downloading multiple
     # pages from the wiki simultaneously.
     gen = genFactory.getCombinedGenerator(preload=True)
