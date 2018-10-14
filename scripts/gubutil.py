@@ -51,10 +51,11 @@ def canonicalise_name(n):
 import pywikibot.data.api as api
 
 def NewGeographImages(parameters = None, **kwargs):
+    if parameters == None: parameters = dict()
     return api.PageGenerator("categorymembers", parameters=dict(
         gcmtitle="Category:Images from Geograph Britain and Ireland",
         gcmtype="file",
-        gcmsort="timestamp", gcmdir="older"),
+        gcmsort="timestamp", gcmdir="older", **parameters),
         **kwargs)
 
 def GeographBotUploads(parameters = None, **kwargs):

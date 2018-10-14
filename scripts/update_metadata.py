@@ -7,7 +7,7 @@ import pywikibot.bot as bot
 import pywikibot.data.api as api
 import pywikibot.pagegenerators
 from pywikibot.pagegenerators import PreloadingGenerator
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from dateutil.tz import gettz
 from math import copysign
 import mwparserfromhell
@@ -328,6 +328,9 @@ def main(*args):
             continue  # nothing to do here
         if arg.startswith("-aistart:"):
             extraparams = { 'gaistart': arg[9:] }
+        if arg.startswith("-recent:"):
+            starttime = datetime.now() - timedelta(days=int(arg[8:]))
+            extraparams = { 'gcmend': starttime.astimezone(timezone.utc) }
     # The preloading option is responsible for downloading multiple
     # pages from the wiki simultaneously.
     gen = genFactory.getCombinedGenerator(preload=True)
