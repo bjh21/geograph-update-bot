@@ -46,3 +46,20 @@ def canonicalise_name(n):
     n = re.sub("\s+$", "", n) # Strip trailing spaces.
     n = re.sub("\s+", " ", n) # Compress multiple spaces
     return n
+
+# Page generators
+import pywikibot.data.api as api
+
+def NewGeographImages(parameters = None, **kwargs):
+    return api.PageGenerator("categorymembers", parameters=dict(
+        gcmtitle="Category:Images from Geograph Britain and Ireland",
+        gcmtype="file",
+        gcmsort="timestamp", gcmdir="older"),
+        **kwargs)
+
+def GeographBotUploads(parameters = None, **kwargs):
+    if parameters == None: parameters = { }
+    parameters['gaiuser'] = 'GeographBot'
+    parameters['gaisort'] = 'timestamp'
+    print(parameters)
+    return api.PageGenerator("allimages", parameters=parameters, **kwargs)
