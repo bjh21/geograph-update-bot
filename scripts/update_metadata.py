@@ -312,7 +312,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
 
 class GeoGeneratorFactory(pywikibot.pagegenerators.GeneratorFactory):
     def _handle_recent(self, value):
-        starttime = datetime.now() - timedelta(days=int(value))
+        starttime = datetime.now(timezone.utc) - timedelta(days=int(value))
         earlystart = starttime - timedelta(days=1)
         extraparams = { 'gcmend': earlystart.astimezone(timezone.utc) }
         new_on_commons = PreloadingGenerator(
