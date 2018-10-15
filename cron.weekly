@@ -17,4 +17,5 @@ cd "${workdir}"
 
 ( cd geograph-db && ./geograph_fetch && ./geograph_import )
 
-# XXX actually run bot here.
+venv/bin/python3 scripts/update_metadata.py -v -pt:5 -log -recent:8
+venv/bin/python3 scripts/upgrade_size.py -v -pt:30 -log -recent:8
