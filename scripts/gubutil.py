@@ -113,3 +113,5 @@ class GeoGeneratorFactory(pywikibot.pagegenerators.GeneratorFactory):
         changed_on_geograph = ModifiedGeographs(
             modified_since = starttime, submitted_before = earlystart)
         return chain(new_on_commons, changed_on_geograph)
+    def _handle_newgeographs(self, value):
+        return NewGeographImages(site=pywikibot.Site())

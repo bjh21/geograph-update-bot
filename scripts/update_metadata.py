@@ -330,9 +330,6 @@ def main(*args):
     # The preloading option is responsible for downloading multiple
     # pages from the wiki simultaneously.
     gen = genFactory.getCombinedGenerator(preload=True)
-    if not gen:
-        gen = PreloadingGenerator(NewGeographImages(site=pywikibot.Site(),
-                                                    parameters=extraparams))
     if gen:
         # pass generator and private options to the bot
         bot = UpdateMetadataBot(gen, **options)
