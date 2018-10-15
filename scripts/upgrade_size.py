@@ -18,7 +18,7 @@ from urllib.parse import urlencode
 from compare import compare_revisions
 import mwparserfromhell
 
-from gubutil import canonicalise_name, tlgetone
+from gubutil import canonicalise_name, tlgetone, GeoGeneratorFactory
 
 geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
@@ -319,7 +319,7 @@ def main(*args):
     # This factory is responsible for processing command line arguments
     # that are also used by other scripts and that determine on which pages
     # to work on.
-    genFactory = pywikibot.pagegenerators.GeneratorFactory()
+    genFactory = GeoGeneratorFactory()
 
     gen = None
     # Parse command line arguments
