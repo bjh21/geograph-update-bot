@@ -140,6 +140,8 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         fi = page.latest_file_info
         bot.log("%d × %d version available" % (original_width, original_height))
         bot.log("current Commons version is %d × %d" % (fi.width, fi.height))
+        if fi.width >= original_width and fi.height >= original_height:
+            raise NotEligible("no higher-resolution version on Geograph")
         if not aspect_ratios_match(fi.width, fi.height,
                                    original_width, original_height):
             raise NotEligible("aspect ratios of images differ")
