@@ -96,3 +96,20 @@ def PagesByGeographId(gridimage_id):
         gcmtype="file",
         gcmstartsortkeyprefix=" %08d" % (gridimage_id,),
         gcmendsortkeyprefix=" %08d" % (gridimage_id + 1,)))
+
+import pywikibot.pagegenerators
+from pywikibot.pagegenerators import PreloadingGenerator
+from datetime import datetime, timedelta, timezone
+from dateutil.tz import gettz
+from itertools import chain
+
+class GeoGeneratorFactory(pywikibot.pagegenerators.GeneratorFactory):
+    def _handle_recent(self, value):
+        starttime = datetime.now(timezone.utc) - timedelta(days=int(value))
+        earlystart = starttime - timedelta(days=1)
+        extraparams = { 'gcmend': earlystart.astimezone(timezone.utc) }
+        new_on_commons = PreloadingGenerator(
+            NewGeographImages(site=pywikibot.Site(), parameters=extraparams))
+        changed_on_geograph = ModifiedGeographs(
+            modified_since = starttime, submitted_before = earlystart)
+        return chain(new_on_commons, changed_on_geograph)

@@ -23,7 +23,7 @@ from location import (location_from_row, object_location_from_row,
 
 from gubutil import (
     get_gridimage_id, TooManyTemplates, tlgetone, NewGeographImages,
-    GeographBotUploads, ModifiedGeographs)
+    GeoGeneratorFactory)
 
 # Ways that Geograph locations get in:
 # BotMultichill (example?)
@@ -310,17 +310,6 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         except TooManyTemplates as e:
             bot.error(str(e))
 
-class GeoGeneratorFactory(pywikibot.pagegenerators.GeneratorFactory):
-    def _handle_recent(self, value):
-        starttime = datetime.now(timezone.utc) - timedelta(days=int(value))
-        earlystart = starttime - timedelta(days=1)
-        extraparams = { 'gcmend': earlystart.astimezone(timezone.utc) }
-        new_on_commons = PreloadingGenerator(
-            NewGeographImages(site=pywikibot.Site(), parameters=extraparams))
-        changed_on_geograph = ModifiedGeographs(
-            modified_since = starttime, submitted_before = earlystart)
-        return chain(new_on_commons, changed_on_geograph)
-            
 def main(*args):
     options = {}
     # Process global arguments to determine desired site
