@@ -327,8 +327,6 @@ def main(*args):
         # Catch the pywikibot.pagegenerators options
         if genFactory.handleArg(arg):
             continue  # nothing to do here
-        if arg.startswith("-aistart:"):
-            extraparams = { 'gaistart': arg[9:] }
     # The preloading option is responsible for downloading multiple
     # pages from the wiki simultaneously.
     gen = genFactory.getCombinedGenerator(preload=True)
