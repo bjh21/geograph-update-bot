@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+export PATH=/home/bjharris/bin:/usr/local/bin:/usr/bin:/bin:/usr/bin/X11:/usr/games
+
 suffix=geograph-update-bot
 srcdir=/home/bjharris/geograph-update-bot
 workdir="/quicksand/bjharris.${suffix}"
