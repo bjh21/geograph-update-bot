@@ -30,6 +30,7 @@ from gubutil import TooManyTemplates
 # [✓] DschwenBot (File:Panorama-Walsall.jpg)
 # [✓] File Upload Bot (Magnus Manske)
 # [✓] Geograph2commons
+# [ ] Manually copied from Geograph
 
 class NotEligible(Exception):
     pass
