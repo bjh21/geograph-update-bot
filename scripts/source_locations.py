@@ -25,7 +25,7 @@ from gubutil import TooManyTemplates
 
 # Ways that Geograph locations get in:
 # [✓] GeographBot (of course)
-# [ ] BotMultichill
+# [✓] BotMultichill
 #         (File:Lacock, St Cyriac's Church - geograph.org.uk - 211699.jpg)
 # [✓] DschwenBot (File:Panorama-Walsall.jpg)
 # [✓] File Upload Bot (Magnus Manske)
@@ -93,8 +93,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             if not reason:
                 raise NotEligible("location added since upload")
         else:
-            if old_location != first_location:
-                raise NotEligible("location changed since upload")
+          if old_location == first_location:
             if (firstrev.comment in
                 ("Transferred from geograph.co.uk using "
                  "[https://tools.wmflabs.org/geograph2commons/ "
@@ -111,7 +110,20 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                   ("File Upload Bot (Magnus Manske)", "GeographBot")):
                 reason = ("set at upload by [[User:%s|%s]]" %
                           (firstrev.user, firstrev.user))
-
+          else:
+            # Location changed since first upload.
+            # This may have been BotMultichill fixing a broken upload.
+            for oldrev in page.revisions():
+                if oldrev.user == 'BotMultichill':
+                    if (oldrev.comment == "Fixing location"):
+                        fixed_tree = mwparserfromhell.parse(
+                            page.getOldVersion(oldrev.revid))
+                        fixed_location = get_location(fixed_tree)
+                        if old_location != fixed_location:
+                            raise NotEligible("location changed since fixing")
+                        reason = "fixed by [[User:BotMultichill]]"
+            if not reason:
+                raise NotEligible("location changed since upload")
         if reason:
             try:
                 paramstr = str(old_location.get(3).value)
