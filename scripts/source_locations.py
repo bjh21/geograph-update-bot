@@ -25,7 +25,8 @@ from gubutil import TooManyTemplates
 
 # Ways that Geograph locations get in:
 # [✓] GeographBot (of course)
-# [ ] BotMultichill (example?)
+# [ ] BotMultichill
+#         (File:Lacock, St Cyriac's Church - geograph.org.uk - 211699.jpg)
 # [✓] DschwenBot (File:Panorama-Walsall.jpg)
 # [✓] File Upload Bot (Magnus Manske)
 # [✓] Geograph2commons
