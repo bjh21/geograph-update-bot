@@ -24,11 +24,11 @@ from location import (location_from_row, object_location_from_row,
 from gubutil import TooManyTemplates
 
 # Ways that Geograph locations get in:
-# GeographBot (of course)
-# BotMultichill (example?)
-# DschwenBot (File:Panorama-Walsall.jpg)
-# File Upload Bot (Magnus Manske)
-# Geograph2commons
+# [✓] GeographBot (of course)
+# [ ] BotMultichill (example?)
+# [✓] DschwenBot (File:Panorama-Walsall.jpg)
+# [✓] File Upload Bot (Magnus Manske)
+# [✓] Geograph2commons
 
 class NotEligible(Exception):
     pass
@@ -78,23 +78,38 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         try:
             first_location = get_location(first_tree)
         except IndexError:
-            raise NotEligible("location added since upload")
-        if old_location != first_location:
-            raise NotEligible("location changed since upload")
-        if (firstrev.comment in
-            ("Transferred from geograph.co.uk using "
-             "[https://tools.wmflabs.org/geograph2commons/ geograph2commons]",
-             # Some uploads have this curious typo'd version of the summary.
-             "Transferred from geograph.co.uk using "
-             "[https://tools.wmflabs.org/geograph2commons/ grograph2commons]")):
-            # Would like to check tag, but pywikibot doesn't seem to
-            # expose it.
-            reason = ("set at upload by "
-                      "[[toollabs:geograph2commons|geograph2commons]]")
-        elif (firstrev.user in
-              ("File Upload Bot (Magnus Manske)", "GeographBot")):
-            reason = ("set at upload by [[User:%s|%s]]" %
-                      (firstrev.user, firstrev.user))
+            # Location added since upload.  Maybe added by DschwenBot?
+            for oldrev in page.revisions():
+                if oldrev.user == 'DschwenBot':
+                    if (oldrev.comment == "adding missing Location data from "
+                                      "www.geograph.org.uk"):
+                        added_tree = mwparserfromhell.parse(
+                            page.getOldVersion(oldrev.revid))
+                        added_location = get_location(added_tree)
+                        if old_location != added_location:
+                            raise NotEligible("location changed since added")
+                        reason = "added by [[User:DschwenBot]]"
+            if not reason:
+                raise NotEligible("location added since upload")
+        else:
+            if old_location != first_location:
+                raise NotEligible("location changed since upload")
+            if (firstrev.comment in
+                ("Transferred from geograph.co.uk using "
+                 "[https://tools.wmflabs.org/geograph2commons/ "
+                 "geograph2commons]",
+                 # Some uploads have this curious typo'd version of the summary.
+                 "Transferred from geograph.co.uk using "
+                 "[https://tools.wmflabs.org/geograph2commons/ "
+                 "grograph2commons]")):
+                # Would like to check tag, but pywikibot doesn't seem to
+                # expose it.
+                reason = ("set at upload by "
+                          "[[toollabs:geograph2commons|geograph2commons]]")
+            elif (firstrev.user in
+                  ("File Upload Bot (Magnus Manske)", "GeographBot")):
+                reason = ("set at upload by [[User:%s|%s]]" %
+                          (firstrev.user, firstrev.user))
 
         if reason:
             try:
