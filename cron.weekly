@@ -3,6 +3,7 @@
 set -euo pipefail
 
 export PATH=/home/bjharris/bin:/usr/local/bin:/usr/bin:/bin:/usr/bin/X11:/usr/games
+export WGET_OPTIONS='--progress=dot:giga'
 
 suffix=geograph-update-bot
 srcdir=/home/bjharris/geograph-update-bot
