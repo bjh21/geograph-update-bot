@@ -110,6 +110,8 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             gridimage_id = get_gridimage_id(tree)
         except ValueError as e:
             raise BadTemplate(str(e))
+        except IndexError as e:
+            raise BadTemplate(str(e))
             
         mapit = MapItSettings()
         c = geodb.cursor()
