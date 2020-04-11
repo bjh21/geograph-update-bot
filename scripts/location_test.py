@@ -67,18 +67,20 @@ class FromRowTests(unittest.TestCase):
             "subject SO80930136; viewpoint SO80980134; looking WNW; "
                          "use6fig; geograph")
     def test_minimal_row(self):
-        s = str(location_from_row(self.min_row))
+        self.assertEqual(location_from_row(self.min_row), None)
+        s = str(object_location_from_row(self.min_row))
         self.assertEqual(s,
-            "{{Location|51.712|-2.25|"
+            "{{Object location|51.712|-2.25|"
             "source:geograph-osgb36(SO8201)_region:GB-EAW|prec=1000}}")
         f = format_row(self.full_row)
         self.assertEqual(f,
             "subject SO80930136; viewpoint SO80980134; looking WNW; "
                          "use6fig; geograph")
     def test_low_row(self):
-        s = str(location_from_row(self.low_row))
+        self.assertEqual(location_from_row(self.low_row), None)
+        s = str(object_location_from_row(self.low_row))
         self.assertEqual(s,
-            "{{Location|55.174|-4.93|"
+            "{{Object location|55.174|-4.93|"
             "source:geograph-osgb36(NX1390)_heading:225|prec=1000}}")
         f = format_row(self.low_row)
         self.assertEqual(f,
