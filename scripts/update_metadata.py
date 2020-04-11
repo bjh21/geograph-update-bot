@@ -71,6 +71,8 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         newparam = location_params(new_template)
         # We generally want to synchronise with Geograph.
         should_set = True
+        # but not if there's no change (e.g. both are None)
+        if old_template == new_template: should_set = False
         # but not yet if old template has no gridref
         if (old_template != None and new_template != None
             and '-' not in oldparam['source']):
