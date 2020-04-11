@@ -1,13 +1,18 @@
-diff --git a/pywikibot/site.py b/pywikibot/site.py
-index 0adfbccc..ef34e9db 100644
---- a/pywikibot/site.py
-+++ b/pywikibot/site.py
-@@ -6455,7 +6455,7 @@ class APISite(BaseSite):
+Pywikibot is apparently incapable of overwiting a file from a URL.
+
+See <https://phabricator.wikimedia.org/T174351>.
+
+This patch means that it can overwrite, but I suspect it exposes
+other problems.
+
+--- pywikibot/site/__init__.py~	2020-04-10 09:31:57.000000000 +0100
++++ pywikibot/site/__init__.py	2020-04-10 15:13:33.119499539 +0100
+@@ -6681,7 +6681,7 @@
+                 _file_key = None
                  pywikibot.warning('No filekey defined.')
              if not report_success:
-                 if 'offset' not in result:
--                    result['offset'] = True
-+                    result['offset'] = False
+-                result.setdefault('offset', True)
++                result.setdefault('offset', False)
                  if ignore_warnings(create_warnings_list(result)):
                      return self.upload(
                          filepage, source_filename, source_url, comment, text,

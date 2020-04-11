@@ -7,5 +7,5 @@ venv="${1}"
 virtualenv --python=python3 --system-site-packages "${venv}"
 "${venv}"/bin/pip install -r requirements.txt
 
-patch -d "${venv}"/lib/python3.*/site-packages --binary -p1 \
+patch -d "${venv}"/lib/python3.*/site-packages --binary -p0 \
     < pywikibot.patch
