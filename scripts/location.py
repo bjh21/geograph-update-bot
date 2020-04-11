@@ -14,10 +14,14 @@ from gubutil import tlgetall, tlgetone
 # Britain and the Irish Grid in Ireland.
 
 # epsg:27700 is the British National Grid
-bng = pyproj.Proj(init="epsg:27700")
+bng = pyproj.CRS.from_epsg(27700)
 # epsg:29903 is the Irish Grid
-ig = pyproj.Proj(init="epsg:29903")
-wgs84 = pyproj.Proj(proj="latlong", datum="WGS84")
+ig = pyproj.CRS.from_epsg(29903)
+wgs84 = pyproj.CRS.from_epsg(4326)
+transformers = {
+    bng: pyproj.Transformer.from_crs(bng, wgs84),
+    ig:  pyproj.Transformer.from_crs(ig, wgs84),
+}
 
 gridletters = [
     "ABCDE",
@@ -119,7 +123,7 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig,
     square = 10**(5-digits/2)
     e += 0.5 * square
     n += 0.5 * square
-    lon, lat = pyproj.transform(grid, wgs84, e, n)
+    lat, lon = transformers[grid].transform(e, n)
     # At 6dp, one ulp in latitude is about 11cm.  In longitude, about
     # 6cm.  Thus 6dp is enough to distinguish 10-figure GRs in latitude,
     # and 5dp is enough in longitude.
