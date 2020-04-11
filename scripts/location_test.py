@@ -13,7 +13,7 @@ class FromGridTests(unittest.TestCase):
         a = location_from_grid(bng, 380980, 201340, 8, 292, True)
         self.assertEqual(a,
             '{{Location|51.71051|-2.2766|'
-            'source:geograph-osgb36(SO80980134)_heading:292|'
+            'source:geograph-osgb36(SO80980134)_region:GB-EAW_heading:292|'
             'prec=100}}')
 
 class GridLetterTests(unittest.TestCase):
@@ -60,7 +60,7 @@ class FromRowTests(unittest.TestCase):
         s = str(location_from_row(self.full_row))
         self.assertEqual(s,
             "{{Location|51.71051|-2.2766|"
-            "source:geograph-osgb36(SO80980134)_heading:292|"
+            "source:geograph-osgb36(SO80980134)_region:GB-EAW_heading:292|"
             "prec=100}}")
         f = format_row(self.full_row)
         self.assertEqual(f,
@@ -70,7 +70,7 @@ class FromRowTests(unittest.TestCase):
         s = str(location_from_row(self.min_row))
         self.assertEqual(s,
             "{{Location|51.712|-2.25|"
-            "source:geograph-osgb36(SO8201)|prec=1000}}")
+            "source:geograph-osgb36(SO8201)_region:GB-EAW|prec=1000}}")
         f = format_row(self.full_row)
         self.assertEqual(f,
             "subject SO80930136; viewpoint SO80980134; looking WNW; "
@@ -95,7 +95,7 @@ class FromRowTests(unittest.TestCase):
         s = str(location_from_row(self.high_row))
         self.assertEqual(s,
             "{{Location|52.372194|-2.22568|"
-            "source:geograph-osgb36(SO8473274929)|prec=1}}")
+            "source:geograph-osgb36(SO8473274929)_region:GB-EAW|prec=1}}")
         f = format_row(self.high_row)
         self.assertEqual(f,
             "subject SO8474; viewpoint SO8473274929; geograph")
