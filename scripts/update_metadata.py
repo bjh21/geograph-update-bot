@@ -96,6 +96,19 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         azon, azno, distance = (
             az_dist_between_locations(old_template, new_template))
         return "moved %.1f m %s" % (distance, format_direction(azon))
+    def get_sdc_statements(self, page):
+        # SDC data aren't preloaded, so we make an API request every time.
+        # This could be better, wbgetentities can do batches of pages just
+        # like query.
+        mediaid = 'M%d' % (page.pageid,)
+        request = self.site._simple_request(action='wbgetentities',
+                                            ids=mediaid)
+        data = request.submit()
+        return data['entities'][mediaid].get('statements', {})
+    def has_sdc_geocoding(self, page):
+        statements = self.get_sdc_statements(page)
+        return ('P625' in statements or
+                'P1259' in statements)
     def process_page(self, page):
         location_added = False
         location_replaced = False
@@ -163,6 +176,12 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     old_location, new_location, "camera")
                 should_set_obj = self.should_set_location(
                     old_object_location, new_object_location, "object")
+                # But not if there's an SDC location.  We can't update
+                # SDC yet and it would be unfortunate to gratuitously
+                # desynchronise them.
+                if self.has_sdc_geocoding(page):
+                    bot.log("Page has SDC geocoding: not updating (yet)")
+                    should_set_cam = should_set_obj = False
                 # Do it if necessary:
                 mapit.allowed = True
                 if should_set_cam:
