@@ -179,7 +179,8 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 # But not if there's an SDC location.  We can't update
                 # SDC yet and it would be unfortunate to gratuitously
                 # desynchronise them.
-                if self.has_sdc_geocoding(page):
+                if ((should_set_cam or should_set_obj) and
+                    self.has_sdc_geocoding(page)):
                     bot.log("Page has SDC geocoding: not updating (yet)")
                     should_set_cam = should_set_obj = False
                 # Do it if necessary:
