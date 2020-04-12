@@ -1,10 +1,13 @@
 from __future__ import division, print_function, unicode_literals
 
 import unittest
+from gubutil import tlgetone
 from location import (bng, ig, location_from_grid, location_from_row,
                       object_location_from_row,
                       en_from_gr, bngr_from_en, format_row,
-                      set_location, set_object_location)
+                      set_location, set_object_location,
+                      get_location, get_object_location,
+                      statement_equals_template)
 import mwparserfromhell
 from mwparserfromhell.nodes.template import Template
 
@@ -194,15 +197,6 @@ class SDCEqualityTests(unittest.TestCase):
 {{Object location|56.05694|-6.2600|source:geograph-osgb36(NR34889308)_heading:202|prec=100}}
 """)
         self.sdc = {
-            "pageid": 87185965,
-            "ns": 6,
-            "title": "File:Dun Gallain (geograph 1855936).jpg",
-            "lastrevid": 410277346,
-            "modified": "2020-04-10T11:51:48Z",
-            "type": "mediainfo",
-            "id": "M87185965",
-            "labels": {},
-            "descriptions": {},
             "statements": {
                 "P1259": [
                     {
@@ -269,8 +263,14 @@ class SDCEqualityTests(unittest.TestCase):
                 ]
             }
         }        
-    def test_match(self):
-        pass
+    def test_match_camera(self):
+        self.assertTrue(
+            statement_equals_template(self.sdc['statements']['P1259'][0],
+                                      get_location(self.templates)))
+    def test_match_object(self):
+        self.assertTrue(
+            statement_equals_template(self.sdc['statements']['P625'][0],
+                                      get_object_location(self.templates)))
         
 if __name__ == '__main__':
     unittest.main()
