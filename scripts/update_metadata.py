@@ -180,12 +180,12 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     old_object_location, new_object_location, "object")
                 # Check if SDC has location templates.
                 statements = self.get_sdc_statements(page)
-                for s in statements.get('P625', []):
+                for s in statements.get('P1259', []):
                     if (old_location != None and
                         statement_matches_template(s, old_location)):
                         bot.log("Might want to update %s" % (s['id'],))
-                for s in statements.get('P1259', []):
-                    if (old_location != None and
+                for s in statements.get('P625', []):
+                    if (old_object_location != None and
                         statement_matches_template(s, old_object_location)):
                         bot.log("Might want to update %s" % (s['id'],))
                 # But not if there's an SDC location.  We can't update
