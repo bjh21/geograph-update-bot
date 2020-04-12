@@ -271,6 +271,26 @@ class SDCEqualityTests(unittest.TestCase):
         self.assertTrue(
             statement_equals_template(self.sdc['statements']['P625'][0],
                                       get_object_location(self.templates)))
+    def test_nomatch_lat(self):
+        (self.sdc['statements']['P1259'][0]['mainsnak']
+         ['datavalue']['value']['latitude']) += 1
+        self.assertFalse(
+            statement_equals_template(self.sdc['statements']['P1259'][0],
+                                      get_location(self.templates)))
+    def test_nomatch_hdg(self):
+        (self.sdc['statements']['P1259'][0]['qualifiers']['P7787'][0]
+         ['datavalue']['value']['amount']) = '+1'
+        self.assertFalse(
+            statement_equals_template(self.sdc['statements']['P1259'][0],
+                                      get_location(self.templates)))
+    def test_nomatch_globe(self):
+        (self.sdc['statements']['P1259'][0]['mainsnak']
+         ['datavalue']['value']['globe']) = (
+             "http://www.wikidata.org/entity/Q19907")
+        self.assertFalse(
+            statement_equals_template(self.sdc['statements']['P1259'][0],
+                                      get_location(self.templates)))
+
         
 if __name__ == '__main__':
     unittest.main()
