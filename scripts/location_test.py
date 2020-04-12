@@ -186,5 +186,91 @@ class EditingTest3(unittest.TestCase):
 [[Category:Geograph images in Merseyside]]
 """)
 
+class SDCEqualityTests(unittest.TestCase):
+    def setUp(self):
+        # These come from File:Dun Gallain (geograph 1855936).jpg
+        self.templates = mwparserfromhell.parse("""
+{{Location|56.05814|-6.2592|source:geograph-osgb36(NR34949321)_heading:202|prec=100}}
+{{Object location|56.05694|-6.2600|source:geograph-osgb36(NR34889308)_heading:202|prec=100}}
+""")
+        self.sdc = {
+            "pageid": 87185965,
+            "ns": 6,
+            "title": "File:Dun Gallain (geograph 1855936).jpg",
+            "lastrevid": 410277346,
+            "modified": "2020-04-10T11:51:48Z",
+            "type": "mediainfo",
+            "id": "M87185965",
+            "labels": {},
+            "descriptions": {},
+            "statements": {
+                "P1259": [
+                    {
+                        "mainsnak": {
+                            "snaktype": "value",
+                            "property": "P1259",
+                            "hash": "bd6d05faaed76842fa29c241627838d506dfe603",
+                            "datavalue": {
+                                "value": {
+                                    "latitude": 56.05814,
+                                    "longitude": -6.2592,
+                                    "altitude": None,
+                                    "precision": 1.0e-5,
+                                    "globe": "http://www.wikidata.org/entity/Q2"
+                                },
+                                "type": "globecoordinate"
+                            }
+                        },
+                        "type": "statement",
+                        "qualifiers": {
+                            "P7787": [
+                                {
+                                    "snaktype": "value",
+                                    "property": "P7787",
+                                    "hash": "e53735673ad2bfdddb52501fe7abfd7539923afb",
+                                    "datavalue": {
+                                        "value": {
+                                            "amount": "+202",
+                                            "unit": "http://www.wikidata.org/entity/Q28390"
+                                        },
+                                        "type": "quantity"
+                                    }
+                                }
+                            ]
+                        },
+                        "qualifiers-order": [
+                            "P7787"
+                        ],
+                        "id": "M87185965$7A4DC13E-49A9-4BE2-AA8B-A27F42CD0C69",
+                        "rank": "normal"
+                    }
+                ],
+                "P625": [
+                    {
+                        "mainsnak": {
+                            "snaktype": "value",
+                            "property": "P625",
+                            "hash": "d51d0bf4d806fff7610428a20b9462eb8db3eb2b",
+                            "datavalue": {
+                                "value": {
+                                    "latitude": 56.05694,
+                                    "longitude": -6.26,
+                                    "altitude": None,
+                                    "precision": 1.0e-5,
+                                    "globe": "http://www.wikidata.org/entity/Q2"
+                                },
+                                "type": "globecoordinate"
+                            }
+                        },
+                        "type": "statement",
+                        "id": "M87185965$5F1AB790-6C68-4910-9577-2EF1BB7CA329",
+                        "rank": "normal"
+                    }
+                ]
+            }
+        }        
+    def test_match(self):
+        pass
+        
 if __name__ == '__main__':
     unittest.main()
