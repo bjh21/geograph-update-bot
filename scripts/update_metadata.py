@@ -19,7 +19,7 @@ from location import (location_from_row, object_location_from_row,
                       az_dist_between_locations, format_row,
                       format_direction, get_location, get_object_location,
                       set_location, set_object_location, location_params,
-                      MapItSettings)
+                      MapItSettings, statement_equals_template)
 
 from gubutil import (
     get_gridimage_id, TooManyTemplates, tlgetone, NewGeographImages,
