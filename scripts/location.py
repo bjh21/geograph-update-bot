@@ -218,7 +218,7 @@ def object_location_from_row(row, mapit = None):
 # statements that are based on old data from Geograph by matching them
 # against templates.  This wouldn't be necessary if statements could
 # record their sources like templates can.
-def statement_equals_template(statement, template):
+def statement_matches_template(statement, template):
     # A major point of this is to detect cases where BotMultichill has
     # copied co-ordinates from wikitext to SDC properties, so we need
     # to recognise its handiwork.

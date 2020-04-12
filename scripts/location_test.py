@@ -7,7 +7,7 @@ from location import (bng, ig, location_from_grid, location_from_row,
                       en_from_gr, bngr_from_en, format_row,
                       set_location, set_object_location,
                       get_location, get_object_location,
-                      statement_equals_template)
+                      statement_matches_template)
 import mwparserfromhell
 from mwparserfromhell.nodes.template import Template
 
@@ -265,30 +265,30 @@ class SDCEqualityTests(unittest.TestCase):
         }        
     def test_match_camera(self):
         self.assertTrue(
-            statement_equals_template(self.sdc['statements']['P1259'][0],
+            statement_matches_template(self.sdc['statements']['P1259'][0],
                                       get_location(self.templates)))
     def test_match_object(self):
         self.assertTrue(
-            statement_equals_template(self.sdc['statements']['P625'][0],
+            statement_matches_template(self.sdc['statements']['P625'][0],
                                       get_object_location(self.templates)))
     def test_nomatch_lat(self):
         (self.sdc['statements']['P1259'][0]['mainsnak']
          ['datavalue']['value']['latitude']) += 1
         self.assertFalse(
-            statement_equals_template(self.sdc['statements']['P1259'][0],
+            statement_matches_template(self.sdc['statements']['P1259'][0],
                                       get_location(self.templates)))
     def test_nomatch_hdg(self):
         (self.sdc['statements']['P1259'][0]['qualifiers']['P7787'][0]
          ['datavalue']['value']['amount']) = '+1'
         self.assertFalse(
-            statement_equals_template(self.sdc['statements']['P1259'][0],
+            statement_matches_template(self.sdc['statements']['P1259'][0],
                                       get_location(self.templates)))
     def test_nomatch_globe(self):
         (self.sdc['statements']['P1259'][0]['mainsnak']
          ['datavalue']['value']['globe']) = (
              "http://www.wikidata.org/entity/Q19907")
         self.assertFalse(
-            statement_equals_template(self.sdc['statements']['P1259'][0],
+            statement_matches_template(self.sdc['statements']['P1259'][0],
                                       get_location(self.templates)))
 
         
