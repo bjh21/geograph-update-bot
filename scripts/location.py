@@ -213,6 +213,60 @@ def object_location_from_row(row, mapit = None):
     t.name = mwparserfromhell.parse("Object location")
     return t
 
+# Determine whether a structured data statement is equivalent to a
+# given template.  This is useful because we'd like to detect
+# statements that are based on old data from Geograph by matching them
+# against templates.  This wouldn't be necessary if statements could
+# record their sources like templates can.
+def statement_equals_template(statement, template):
+    # A major point of this is to detect cases where BotMultichill has
+    # copied co-ordinates from wikitext to SDC properties, so we need
+    # to recognise its handiwork.
+
+    # First check that the statement has the right property.
+    if not ((statement['mainsnak']['property'] == 'P625' and
+             template.name in objtls) or
+            (statement['mainsnak']['property'] == 'P1259' and
+             template.name in loctls)):
+        return False
+    # Templates correspond to actual locations on Earth.
+    if not (statement['mainsnak']['snaktype'] == 'value' and
+            statement['mainsnak']['datavalue']['type'] == 'globecoordinate' and
+            statement['mainsnak']['datavalue']['value']['globe'] ==
+            "http://www.wikidata.org/entity/Q2"): return False
+    statement_value = statement['mainsnak']['datavalue']['value']
+    # Check lat/long between statement and template.
+    if not (float(statement_value['latitude'])  == float(str(template.get(1)))
+            and
+            float(statement_value['longitude']) == float(str(template.get(2)))):
+        return False
+    # We deliberately ignore precision.
+    # If this is an object location there should be no qualifier.
+    if (statement['mainsnak']['property'] == 'P625' and
+        statement.get('qualifiers', {}) != {}): return False
+    # If it's a camera location, there might be a bearing.
+    if (statement['mainsnak']['property'] == 'P1259' and
+        list(statement.get('qualifiers', {}).keys()) not in
+        ([], ['P7787'])): return False
+    # If there is a bearing, check its structure.
+    bearing_statements = statement.get('qualifiers', {}).get('P7787', [])
+    if len(bearing_statements) > 1: return False
+    statement_bearing = None
+    if len(bearing_statements) == 1:
+        bearing_statement = bearing_statements[0]
+        if not (bearing_statement['snaktype'] == 'value' and
+                bearing_statement['datavalue']['type'] == 'quantity' and
+                bearing_statement['datavalue']['value']['unit'] ==
+                'http://www.wikidata.org/entity/Q28390'): return False
+        # Extract value of bearing.
+        statement_bearing = (
+            float(bearing_statement['datavalue']['value']['amount']))
+    template_bearing = location_params(template).get('heading')
+    if (statement_bearing != None and template_bearing != None and
+        statement_bearing != template_bearing): return False
+    # If we've survived all that, they probably match.
+    return True
+
 # This is overkill, but since I've got pyproj lying around...
 geod = pyproj.Geod(ellps='WGS84')
 def az_dist_between_locations(loc1, loc2):

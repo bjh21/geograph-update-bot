@@ -178,6 +178,16 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     old_location, new_location, "camera")
                 should_set_obj = self.should_set_location(
                     old_object_location, new_object_location, "object")
+                # Check if SDC has location templates.
+                statements = self.get_sdc_statements(page)
+                for s in statements.get('P625', []):
+                    if (old_location != None and
+                        statement_matches_template(s, old_location)):
+                        bot.log("Might want to update %s" % (s['id'],))
+                for s in statements.get('P1259', []):
+                    if (old_location != None and
+                        statement_matches_template(s, old_object_location)):
+                        bot.log("Might want to update %s" % (s['id'],))
                 # But not if there's an SDC location.  We can't update
                 # SDC yet and it would be unfortunate to gratuitously
                 # desynchronise them.
