@@ -74,7 +74,7 @@ class MapItSettings(object):
         self.allowed = allowed
         self.used = False
 
-def region_of(grid, e, n, lat, lon, mapit = None):
+def region_of(grid, e, n, latstr, lonstr, mapit = None):
     # First, see if it's obvious.  Look for a myriad wholly within a single
     # region (including territorial waters).
     myriad = None
@@ -87,10 +87,10 @@ def region_of(grid, e, n, lat, lon, mapit = None):
             return 'GB-ENG'
     if grid == ig:
         if igr_from_en(e, n, 0) in ('M', 'N', 'R', 'S'): return 'IE'
-    
+
     if mapit and mapit.allowed:
         r = requests.get('http://global.mapit.mysociety.org'
-                         '/point/4326/{:f},{:f}'.format(lon,lat))
+                         '/point/4326/{},{}'.format(lonstr,latstr))
         r.raise_for_status()
         j = r.json()
         for area in j.values():
@@ -111,8 +111,7 @@ def source_from_grid(grid, e, n, digits):
         src += "-irishgrid({})".format(igr_from_en(e, n, digits))
     return src
 
-def location_from_grid(grid, e, n, digits, view_direction, use6fig,
-                       mapit = None):
+def latlon_from_grid(grid, e, n, digits, use6fig):
     # A grid reference in textual form, like SO8001, represents a
     # square on the ground whose size depends on the number of digits.
     # So SO8001 is the 1km square whose SW corner is at
@@ -134,9 +133,14 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig,
     prec = square
     # but if use6fig is set, our accuracy is less
     if use6fig: prec = max(prec, 100)
+    return latstr, lonstr, prec
+
+def location_from_grid(grid, e, n, digits, view_direction, use6fig,
+                       mapit = None):
+    latstr, lonstr, prec = latlon_from_grid(grid, e, n, digits, use6fig)
     precstr = "{:g}".format(prec)
     paramstr = "source:" + source_from_grid(grid, e, n, digits)
-    region = region_of(grid, e, n, lat, lon, mapit)
+    region = region_of(grid, e, n, latstr, lonstr, mapit)
     if region != None:
         paramstr += "_region:{}".format(region)
     if view_direction != None:
@@ -147,6 +151,25 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig,
     t.add(3, paramstr)
     t.add('prec', precstr)
     return t
+
+def statement_from_grid(grid, e, n, digits, view_direction, use6fig,
+                       mapit = None):
+    latstr, lonstr, prec = latlon_from_grid(grid, e, n, digits, use6fig)
+    # The precision of a Wikidata GlobeCoordinateValue is expressed in
+    # degrees and must be the same in latitude and longitude.  A metre
+    # is about 0.00002° in longitude at our kind of latitude.
+    prec = prec * 0.00002
+    return dict(
+        type="statement", mainsnak=dict(
+            snaktype="value", property="P1259", datavalue=dict(
+                type="globecoordinate", value=dict(
+                    globe="http://www.wikidata.org/entity/Q2",
+                    latitude=latstr, longitude=lonstr, precision=prec))),
+        qualifiers=dict(P7787=[dict(
+            snaktype="value", property="P7787", datavalue=dict(
+                type="quantity", value=dict(
+                    amount="{:+}".format(view_direction),
+                    unit="http://www.wikidata.org/entity/Q28390")))]))
 
 def location_from_row(row, mapit = None):
     # Row is assumed to be a database row.
@@ -266,6 +289,18 @@ def statement_matches_template(statement, template):
         statement_bearing != template_bearing): return False
     # If we've survived all that, they probably match.
     return True
+
+def location_statement_from_row(row):
+    """
+    Notes:
+    P625 -> lat, lon, prec
+    P1259 -> lat, lon, prec
+      P7787 -> hdg, hdg - 11.25, hdg + 11.25, Q28390
+    refs:
+      P248 -> Q1503119
+      P854 -> https://www.geograph.org.uk/photo/{gridimage_id}
+      P577 -> {last_modified}
+    """
 
 # This is overkill, but since I've got pyproj lying around...
 geod = pyproj.Geod(ellps='WGS84')

@@ -2,8 +2,8 @@ from __future__ import division, print_function, unicode_literals
 
 import unittest
 from gubutil import tlgetone
-from location import (bng, ig, location_from_grid, location_from_row,
-                      object_location_from_row,
+from location import (bng, ig, location_from_grid, statement_from_grid,
+                      location_from_row, object_location_from_row,
                       en_from_gr, bngr_from_en, format_row,
                       set_location, set_object_location,
                       get_location, get_object_location,
@@ -18,6 +18,31 @@ class FromGridTests(unittest.TestCase):
             '{{Location|51.71051|-2.2766|'
             'source:geograph-osgb36(SO80980134)_region:GB-EAW_heading:292|'
             'prec=100}}')
+    def test_stmt_from_grid(self):
+        a = statement_from_grid(bng, 380980, 201340, 8, 292, True)
+        self.assertEqual(a, {
+            'type': 'statement',
+            'mainsnak': {
+                'snaktype': 'value', 'property': "P1259",
+                'datavalue': {
+                    'type': 'globecoordinate', 'value': {
+                        'globe': "http://www.wikidata.org/entity/Q2",
+                        'latitude': "51.71051", 'longitude': "-2.2766",
+                        'precision': 0.002 }
+                }
+            },
+            'qualifiers': {
+                "P7787": [ {
+                    'snaktype': 'value', 'property': "P7787",
+                    'datavalue': {
+                        'type': 'quantity', 'value': {
+                            'amount': "+292",
+                            'unit': "http://www.wikidata.org/entity/Q28390",
+                        }
+                    }
+                } ]
+            }
+        })
 
 class GridLetterTests(unittest.TestCase):
     def test_bng(self):
