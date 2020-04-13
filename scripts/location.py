@@ -163,7 +163,10 @@ def statement_from_grid(grid, e, n, digits, view_direction, use6fig):
             snaktype="value", property="P1259", datavalue=dict(
                 type="globecoordinate", value=dict(
                     globe="http://www.wikidata.org/entity/Q2",
-                    latitude=latstr, longitude=lonstr, precision=prec))))
+                    # Contrary to documentation, latitude and longitude
+                    # must be numbers and not strings.
+                    latitude=float(latstr), longitude=float(lonstr),
+                    precision=prec))))
     if view_direction != None:
         s['qualifiers'] = dict(P7787=[dict(
             snaktype="value", property="P7787", datavalue=dict(
