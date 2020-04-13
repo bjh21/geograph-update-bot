@@ -324,9 +324,10 @@ def statement_matches_template(statement, template):
         # Extract value of bearing.
         statement_bearing = (
             float(bearing_statement['datavalue']['value']['amount']))
-    template_bearing = float(location_params(template).get('heading'))
-    if (statement_bearing != None and template_bearing != None and
-        statement_bearing != template_bearing): return False
+    if statement_bearing != None:
+        params = location_params(template)
+        if 'heading' in params:
+            if float(params['heading']) != statement_bearing: return False
     # If we've survived all that, they probably match.
     return True
 
