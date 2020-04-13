@@ -213,8 +213,6 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                                 s_new['id'] = s['id']
                                 bot.log("Updating %s statement %s" %
                                         (s['mainsnak']['property'], s['id']))
-                            bot.log("Updating %s statement %s" %
-                                    (s['mainsnak']['property'], s['id']))
                             sdc_edits.setdefault('claims', [])
                             sdc_edits['claims'].append(s_new)
                 # Do it if necessary:
