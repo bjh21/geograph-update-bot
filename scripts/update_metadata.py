@@ -181,33 +181,42 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     old_location, new_location, "camera")
                 should_set_obj = self.should_set_location(
                     old_object_location, new_object_location, "object")
-                # Check if SDC has location templates.
-                statements = self.get_sdc_statements(page)
-                for s in statements.get('P1259', []):
-                    if (old_location != None and
-                        statement_matches_template(s, old_location)):
-                        s_new = camera_statement_from_row(row)
-                        s_new['id'] = s['id']
-                        sdc_edits.setdefault('claims', [])
-                        sdc_edits['claims'].append(s_new)
-                        bot.log("Updating %s statement %s" %
-                                (s['mainsnak']['property'], s['id']))
-                for s in statements.get('P625', []):
-                    if (old_object_location != None and
-                        statement_matches_template(s, old_object_location)):
-                        s_new = object_statement_from_row(row)
-                        s_new['id'] = s['id']
-                        sdc_edits.setdefault('claims', [])
-                        sdc_edits['claims'].append(s_new)
-                        bot.log("Updating %s statement %s" %
-                                (s['mainsnak']['property'], s['id']))
-                # But not if there's an SDC location.  We can't update
-                # SDC yet and it would be unfortunate to gratuitously
-                # desynchronise them.
-                # if ((should_set_cam or should_set_obj) and
-                #     self.has_sdc_geocoding(page)):
-                #     bot.log("Page has SDC geocoding: not updating (yet)")
-                #     should_set_cam = should_set_obj = False
+                if ((should_set_cam and old_location != None) or
+                    (should_set_obj and old_object_location != None)):
+                    # Check if SDC has location templates.
+                    statements = self.get_sdc_statements(page)
+                    for s in statements.get('P1259', []):
+                        if (should_set_cam and
+                            old_location != None and
+                            statement_matches_template(s, old_location)):
+                            s_new = camera_statement_from_row(row)
+                            if s_new == None:
+                                s_new = dict(id=s['id'], delete="")
+                                bot.log("Removing %s statement %s" %
+                                        (s['mainsnak']['property'], s['id']))
+                            else:
+                                s_new['id'] = s['id']
+                                bot.log("Updating %s statement %s" %
+                                        (s['mainsnak']['property'], s['id']))
+                            sdc_edits.setdefault('claims', [])
+                            sdc_edits['claims'].append(s_new)
+                    for s in statements.get('P625', []):
+                        if (should_set_obj and
+                            old_object_location != None and
+                            statement_matches_template(s, old_object_location)):
+                            s_new = object_statement_from_row(row)
+                            if s_new == None:
+                                s_new = dict(id=s['id'], delete="")
+                                bot.log("Removing %s statement %s" %
+                                        (s['mainsnak']['property'], s['id']))
+                            else:
+                                s_new['id'] = s['id']
+                                bot.log("Updating %s statement %s" %
+                                        (s['mainsnak']['property'], s['id']))
+                            bot.log("Updating %s statement %s" %
+                                    (s['mainsnak']['property'], s['id']))
+                            sdc_edits.setdefault('claims', [])
+                            sdc_edits['claims'].append(s_new)
                 # Do it if necessary:
                 mapit.allowed = True
                 if should_set_cam:
@@ -345,12 +354,14 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             page.text = newtext
             page.save(summary, minor=minor)
             if sdc_edits:
-                wbsummary = ("Same as the previous edit, "
-                             "but for structured data")
+                # It's slightly incorrect to re-use the main edit
+                # summary, since data may be missing from SDC and we
+                # don't use MapIt for SDC.  I'm not sure it's worth
+                # the effort of changing it, though.
                 self.site._simple_request(
                     action='wbeditentity', format='json',
                     id='M%d' % (page.pageid,), data=json.dumps(sdc_edits),
-                    token=self.site.tokens['csrf'], summary=wbsummary,
+                    token=self.site.tokens['csrf'], summary=summary,
                     bot=True, baserevid=revid).submit()
 
     def treat_page(self):
