@@ -171,7 +171,7 @@ def statement_from_grid(grid, e, n, digits, view_direction, use6fig,
                     amount="{:+}".format(view_direction),
                     unit="http://www.wikidata.org/entity/Q28390")))]))
 
-def location_from_row(row, mapit = None):
+def camera_grid_from_row(row, mapit = None):
     # Row is assumed to be a database row.
     grids = { 1: bng, 2: ig }
     grid = grids[row['reference_index']]
@@ -192,11 +192,6 @@ def location_from_row(row, mapit = None):
         digits = 4
     else:
         return None
-    # Consensus on Commons seems to be that 1km is not sufficient for
-    # camera location, but is acceptable for object location if that's
-    # all we've got.
-    if digits == 4:
-        return None
     # The Geograph view direction is probably specified in grid space
     # rather than as a true heading.  Happily, the difference in the
     # second-worst place (Soay) is only 5°, which isn't really
@@ -206,10 +201,21 @@ def location_from_row(row, mapit = None):
     heading = int(row['view_direction'])
     if heading == -1: heading = None
     use6fig = bool(row['use6fig'])
+    return grid, e, n, digits, heading, use6fig
+
+def location_from_row(row, mapit = None):
+    camera_grid = camera_grid_from_row(row)
+    if camera_grid == None: return None
+    grid, e, n, digits, heading, use6fig = camera_grid
+    # Consensus on Commons seems to be that 1km is not sufficient for
+    # camera location, but is acceptable for object location if that's
+    # all we've got.
+    if digits == 4:
+        return None
     t = location_from_grid(grid, e, n, digits, heading, use6fig, mapit)
     return t
 
-def object_location_from_row(row, mapit = None):
+def object_grid_from_row(row):
     # The "subject location" in Geograph isn't necessarily the main
     # subject of the image:
     #
@@ -224,14 +230,18 @@ def object_location_from_row(row, mapit = None):
     else:
         e, n = en_from_gr(row['grid_reference'])
         digits = int(row['natgrlen'])
+    heading = int(row['view_direction'])
+    if heading == -1: heading = None
+    use6fig = bool(row['use6fig'])
+    return grid, e, n, digits, heading, use6fig
+
+def object_location_from_row(row, mapit = None):
+    grid, e, n, digits, heading, use6fig = object_grid_from_row(row)
     # Consensus on Commons seems to be that 1km is not sufficient for
     # camera location, but is acceptable for object location if that's
     # all we've got.
     if digits == 4 and location_from_row(row) != None:
         return None
-    heading = int(row['view_direction'])
-    if heading == -1: heading = None
-    use6fig = bool(row['use6fig'])
     t = location_from_grid(grid, e, n, digits, heading, use6fig, mapit)
     t.name = mwparserfromhell.parse("Object location")
     return t
