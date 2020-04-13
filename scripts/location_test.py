@@ -90,6 +90,12 @@ class FromRowTests(unittest.TestCase):
             "{{Location|51.71051|-2.2766|"
             "source:geograph-osgb36(SO80980134)_region:GB-EAW_heading:292|"
             "prec=100}}")
+    def test_full_row_cstmt(self):
+        s = camera_statement_from_row(self.full_row)
+        self.assertEqual(s, None)
+    def test_full_row_ostmt(self):
+        s = object_statement_from_row(self.full_row)
+        self.assertEqual(s, None)
     def test_full_row_fmt(self):
         f = format_row(self.full_row)
         self.assertEqual(f,
@@ -102,6 +108,11 @@ class FromRowTests(unittest.TestCase):
         self.assertEqual(s,
             "{{Object location|51.712|-2.25|"
             "source:geograph-osgb36(SO8201)_region:GB-EAW|prec=1000}}")
+    def test_minimal_row_cstmt(self):
+        self.assertEqual(camera_statement_from_row(self.min_row), None)
+    def test_minimal_row_ostmt(self):
+        s = object_statement_from_full_row(self.min_row)
+        self.assertEqual(s, None)
     def test_minimal_row_fmt(self):
         f = format_row(self.min_row)
         self.assertEqual(f,
