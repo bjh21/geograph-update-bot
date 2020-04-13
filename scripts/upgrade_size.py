@@ -107,9 +107,6 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
     def process_page(self, page):
         if not page.botMayEdit():
             raise NotEligible("bot forbidden from editing this page")
-        for fi in page.get_file_history().values():
-            if fi.user == "Geograph Update Bot":
-                raise NotEligible("file already uploaded by me")
         tree = mwparserfromhell.parse(page.text)
         try:
             geograph_template = tlgetone(tree, ['Geograph'])
@@ -151,6 +148,9 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         else:
             if max(fi.width, fi.height) not in (800, 1024):
                 raise NotEligible("dimensions do not match any Geograph image")
+        for fi in page.get_file_history().values():
+            if fi.user == "Geograph Update Bot":
+                raise NotEligible("file already uploaded by me")
         geograph_info = get_geograph_info(gridimage_id)
         if (canonicalise_name(geograph_info['author_name']) !=
             canonicalise_name(commons_author)):
