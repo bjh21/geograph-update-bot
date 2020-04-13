@@ -152,8 +152,7 @@ def location_from_grid(grid, e, n, digits, view_direction, use6fig,
     t.add('prec', precstr)
     return t
 
-def statement_from_grid(grid, e, n, digits, view_direction, use6fig,
-                       mapit = None):
+def statement_from_grid(grid, e, n, digits, view_direction, use6fig):
     latstr, lonstr, prec = latlon_from_grid(grid, e, n, digits, use6fig)
     # The precision of a Wikidata GlobeCoordinateValue is expressed in
     # degrees and must be the same in latitude and longitude.  A metre
@@ -215,6 +214,18 @@ def location_from_row(row, mapit = None):
     t = location_from_grid(grid, e, n, digits, heading, use6fig, mapit)
     return t
 
+def camera_statement_from_row(row):
+    camera_grid = camera_grid_from_row(row)
+    if camera_grid == None: return None
+    grid, e, n, digits, heading, use6fig = camera_grid
+    # Consensus on Commons seems to be that 1km is not sufficient for
+    # camera location, but is acceptable for object location if that's
+    # all we've got.
+    if digits == 4:
+        return None
+    s = statement_from_grid(grid, e, n, digits, heading, use6fig)
+    return s
+
 def object_grid_from_row(row):
     # The "subject location" in Geograph isn't necessarily the main
     # subject of the image:
@@ -245,6 +256,20 @@ def object_location_from_row(row, mapit = None):
     t = location_from_grid(grid, e, n, digits, heading, use6fig, mapit)
     t.name = mwparserfromhell.parse("Object location")
     return t
+
+def object_statement_from_row(row):
+    grid, e, n, digits, heading, use6fig = object_grid_from_row(row)
+    # Consensus on Commons seems to be that 1km is not sufficient for
+    # camera location, but is acceptable for object location if that's
+    # all we've got.
+    if digits == 4 and camera_statement_from_row(row) != None:
+        return None
+    s = statement_from_grid(grid, e, n, digits, heading, use6fig)
+    s['mainsnak']['property'] = "P625"
+    # Heading appears only to be used on P1259, not on P625.
+    if "P7787" in s.get('qualifiers', {}):
+        del s['qualifiers']['P7787']
+    return s
 
 # Determine whether a structured data statement is equivalent to a
 # given template.  This is useful because we'd like to detect
