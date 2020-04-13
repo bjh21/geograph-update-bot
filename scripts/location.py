@@ -159,7 +159,7 @@ def statement_from_grid(grid, e, n, digits, view_direction, use6fig):
     # is about 0.00002° in longitude at our kind of latitude.
     prec = prec * 0.00002
     s = dict(
-        type="statement", mainsnak=dict(
+        type="statement", rank='normal', mainsnak=dict(
             snaktype="value", property="P1259", datavalue=dict(
                 type="globecoordinate", value=dict(
                     globe="http://www.wikidata.org/entity/Q2",
