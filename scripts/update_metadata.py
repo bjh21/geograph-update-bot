@@ -10,12 +10,14 @@ from pywikibot.pagegenerators import PreloadingGenerator
 from datetime import datetime, timedelta, timezone
 from dateutil.tz import gettz
 from itertools import chain
+import json
 from math import copysign
 import mwparserfromhell
 import re
 import sqlite3
 from creditline import creditline_from_row, can_add_creditline, add_creditline
 from location import (location_from_row, object_location_from_row,
+                      camera_statement_from_row, object_statement_from_row,
                       az_dist_between_locations, format_row,
                       format_direction, get_location, get_object_location,
                       set_location, set_object_location, location_params,
@@ -119,6 +121,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         object_location_replaced = False
         object_location_removed = False
         creditline_added = False
+        sdc_edits = {}
         revid = page.latest_revision_id
         tree = mwparserfromhell.parse(page.text)
         try:
@@ -183,18 +186,28 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 for s in statements.get('P1259', []):
                     if (old_location != None and
                         statement_matches_template(s, old_location)):
-                        bot.log("Might want to update %s" % (s['id'],))
+                        s_new = camera_statement_from_row(row)
+                        s_new['id'] = s['id']
+                        sdc_edits.setdefault('claims', [])
+                        sdc_edits['claims'].append(s_new)
+                        bot.log("Updating %s statement %s" %
+                                (s['mainsnak']['property'], s['id']))
                 for s in statements.get('P625', []):
                     if (old_object_location != None and
                         statement_matches_template(s, old_object_location)):
-                        bot.log("Might want to update %s" % (s['id'],))
+                        s_new = object_statement_from_row(row)
+                        s_new['id'] = s['id']
+                        sdc_edits.setdefault('claims', [])
+                        sdc_edits['claims'].append(s_new)
+                        bot.log("Updating %s statement %s" %
+                                (s['mainsnak']['property'], s['id']))
                 # But not if there's an SDC location.  We can't update
                 # SDC yet and it would be unfortunate to gratuitously
                 # desynchronise them.
-                if ((should_set_cam or should_set_obj) and
-                    self.has_sdc_geocoding(page)):
-                    bot.log("Page has SDC geocoding: not updating (yet)")
-                    should_set_cam = should_set_obj = False
+                # if ((should_set_cam or should_set_obj) and
+                #     self.has_sdc_geocoding(page)):
+                #     bot.log("Page has SDC geocoding: not updating (yet)")
+                #     should_set_cam = should_set_obj = False
                 # Do it if necessary:
                 mapit.allowed = True
                 if should_set_cam:
@@ -331,6 +344,14 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 return
             page.text = newtext
             page.save(summary, minor=minor)
+            if sdc_edits:
+                wbsummary = ("Same as the previous edit, "
+                             "but for structured data")
+                self.site._simple_request(
+                    action='wbeditentity', format='json',
+                    id='M%d' % (page.pageid,), data=json.dumps(sdc_edits),
+                    token=self.site.tokens['csrf'], summary=wbsummary,
+                    bot=True, baserevid=revid).submit()
 
     def treat_page(self):
         try:
