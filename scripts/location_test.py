@@ -4,6 +4,8 @@ import unittest
 from gubutil import tlgetone
 from location import (bng, ig, location_from_grid, statement_from_grid,
                       location_from_row, object_location_from_row,
+                      camera_statement_from_row,
+                      object_statement_from_row,
                       en_from_gr, bngr_from_en, format_row,
                       set_location, set_object_location,
                       get_location, get_object_location,
@@ -111,7 +113,7 @@ class FromRowTests(unittest.TestCase):
     def test_minimal_row_cstmt(self):
         self.assertEqual(camera_statement_from_row(self.min_row), None)
     def test_minimal_row_ostmt(self):
-        s = object_statement_from_full_row(self.min_row)
+        s = object_statement_from_row(self.min_row)
         self.assertEqual(s, None)
     def test_minimal_row_fmt(self):
         f = format_row(self.min_row)
