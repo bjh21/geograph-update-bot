@@ -94,10 +94,28 @@ class FromRowTests(unittest.TestCase):
             "prec=100}}")
     def test_full_row_cstmt(self):
         s = camera_statement_from_row(self.full_row)
-        self.assertEqual(s, None)
+        self.assertEqual(s, {
+            'type': 'statement', 'mainsnak': {
+                'snaktype': 'value', 'property': 'P1259', 'datavalue': {
+                    'type': 'globecoordinate', 'value': {
+                        'globe': 'http://www.wikidata.org/entity/Q2',
+                        'latitude': '51.71051', 'longitude': '-2.2766',
+                        'precision': 0.002}}},
+            'qualifiers': {'P7787': [{
+                'snaktype': 'value', 'property': 'P7787', 'datavalue': {
+                    'type': 'quantity', 'value': {
+                        'amount': '+292',
+                        'unit': 'http://www.wikidata.org/entity/Q28390'}}}]}})
     def test_full_row_ostmt(self):
         s = object_statement_from_row(self.full_row)
-        self.assertEqual(s, None)
+        self.assertEqual(s, {
+            'type': 'statement', 'mainsnak': {
+                'snaktype': 'value', 'property': 'P625', 'datavalue': {
+                    'type': 'globecoordinate', 'value': {
+                        'globe': 'http://www.wikidata.org/entity/Q2',
+                        'latitude': '51.71069', 'longitude': '-2.2773',
+                        'precision': 0.002}}},
+            'qualifiers': {}})
     def test_full_row_fmt(self):
         f = format_row(self.full_row)
         self.assertEqual(f,
@@ -114,7 +132,13 @@ class FromRowTests(unittest.TestCase):
         self.assertEqual(camera_statement_from_row(self.min_row), None)
     def test_minimal_row_ostmt(self):
         s = object_statement_from_row(self.min_row)
-        self.assertEqual(s, None)
+        self.assertEqual(s, {
+            'type': 'statement', 'mainsnak': {
+                'snaktype': 'value', 'property': 'P625', 'datavalue': {
+                    'type': 'globecoordinate', 'value': {
+                        'globe': 'http://www.wikidata.org/entity/Q2',
+                        'latitude': '51.712', 'longitude': '-2.25',
+                        'precision': 0.02}}}})
     def test_minimal_row_fmt(self):
         f = format_row(self.min_row)
         self.assertEqual(f,
