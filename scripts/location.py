@@ -158,17 +158,19 @@ def statement_from_grid(grid, e, n, digits, view_direction, use6fig):
     # degrees and must be the same in latitude and longitude.  A metre
     # is about 0.00002° in longitude at our kind of latitude.
     prec = prec * 0.00002
-    return dict(
+    s = dict(
         type="statement", mainsnak=dict(
             snaktype="value", property="P1259", datavalue=dict(
                 type="globecoordinate", value=dict(
                     globe="http://www.wikidata.org/entity/Q2",
-                    latitude=latstr, longitude=lonstr, precision=prec))),
-        qualifiers=dict(P7787=[dict(
+                    latitude=latstr, longitude=lonstr, precision=prec))))
+    if view_direction != None:
+        s['qualifiers'] = dict(P7787=[dict(
             snaktype="value", property="P7787", datavalue=dict(
                 type="quantity", value=dict(
                     amount="{:+}".format(view_direction),
-                    unit="http://www.wikidata.org/entity/Q28390")))]))
+                    unit="http://www.wikidata.org/entity/Q28390")))])
+    return s
 
 def camera_grid_from_row(row, mapit = None):
     # Row is assumed to be a database row.
