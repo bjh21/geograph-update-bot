@@ -57,6 +57,52 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         super(UpdateMetadataBot, self).__init__(site=True, **kwargs)
         # assign the generator to the bot
         self.generator = generator
+    summary_formats = {
+        # (camera_action, object_action)
+        ('add', 'add'):
+        "Add camera and object locations from Geograph ({row})",
+        ('add', 'update'):
+        "Add camera location and update object location ({object_move}), "
+        "both from Geograph ({row})",
+        ('add', 'remove'):
+        "Add camera location from Geograph ({row}) "
+        "and remove Geograph-derived 1km-precision "
+        "object location",
+        ('add', None):
+        "Add camera location from Geograph ({row})",
+        ('update', 'add'):
+        "Update camera location ({camera_move}) and add object location, "
+        "both from Geograph ({row})",
+        ('update', 'update'):
+        "Update camera and object locations "
+        "({camera_move} and {object_move}, respectively) "
+        "from Geograph ({row})",
+        ('update', 'remove'):
+        "Update camera location ({camera_move}) from Geograph ({row}) "
+        "and remove Geograph-derived 1km-precision "
+        "object location",
+        ('update', None):
+        "Update camera location ({camera_move}) from Geograph ({row})",
+        ('remove', 'add'):
+        "Remove Geograph-derived camera location "
+        "(no longer on Geograph, or 1km precision) "
+        "and add object location from Geograph ({row})",
+        ('remove', 'update'):
+        "Remove Geograph-derived camera location "
+        "(no longer on Geograph, or 1km precision) "
+        "and update object location ({object_move}) from Geograph ({row})",
+        # ('remove', 'remove') should be impossible
+        ('remove', None):
+        "Remove Geograph-derived camera location "
+        "(no longer on Geograph, or 1km precision)",
+        (None, 'add'):
+        "Add object location from Geograph ({row})",
+        (None, 'update'):
+        "Update object location ({object_move}) from Geograph ({row})",
+        (None, 'remove'):
+        "Remove Geograph-derived 1km-precision object location",
+        (None, None): ""
+    }
     def unmodified_on_geograph_since_upload(self, page, row):
         commons_dt = page.oldest_revision.full_hist_entry().timestamp
         # For some reason, pywikibot.Timestamps aren't timezone-aware.
@@ -97,6 +143,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     (desc.capitalize(),))
         return should_set
     def describe_move(self, old_template, new_template):
+        if old_template == None or new_template == None: return None
         azon, azno, distance = (
             az_dist_between_locations(old_template, new_template))
         return "moved %.1f m %s" % (distance, format_direction(azon))
@@ -114,12 +161,10 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         return ('P625' in statements or
                 'P1259' in statements)
     def process_page(self, page):
-        location_added = False
-        location_replaced = False
-        location_removed = False
-        object_location_added = False
-        object_location_replaced = False
-        object_location_removed = False
+        camera_action = None
+        object_action = None
+        sdc_camera_action = None
+        sdc_object_action = None
         creditline_added = False
         sdc_edits = {}
         revid = page.latest_revision_id
@@ -161,9 +206,9 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             new_object_location = object_location_from_row(row, mapit=mapit)
             if new_location and new_location.get('prec').value != '1000':
                 set_location(tree, new_location)
-                location_added = True
+                camera_action = 'add'
             set_object_location(tree, new_object_location)
-            object_location_added = True
+            object_action = 'add'
         else:
             oldcamparam = location_params(old_location)
             oldobjparam = location_params(old_object_location)
@@ -194,10 +239,12 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                                 s_new = dict(id=s['id'], delete="")
                                 bot.log("Removing %s statement %s" %
                                         (s['mainsnak']['property'], s['id']))
+                                sdc_camera_action = 'remove'
                             else:
                                 s_new['id'] = s['id']
                                 bot.log("Updating %s statement %s" %
                                         (s['mainsnak']['property'], s['id']))
+                                sdc_camera_action = 'update'
                             sdc_edits.setdefault('claims', [])
                             sdc_edits['claims'].append(s_new)
                     for s in statements.get('P625', []):
@@ -209,10 +256,12 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                                 s_new = dict(id=s['id'], delete="")
                                 bot.log("Removing %s statement %s" %
                                         (s['mainsnak']['property'], s['id']))
+                                sdc_object_action = 'remove'
                             else:
                                 s_new['id'] = s['id']
                                 bot.log("Updating %s statement %s" %
                                         (s['mainsnak']['property'], s['id']))
+                                sdc_object_action = 'update'
                             sdc_edits.setdefault('claims', [])
                             sdc_edits['claims'].append(s_new)
                 # Do it if necessary:
@@ -221,23 +270,23 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     set_location(tree, location_from_row(row, mapit=mapit))
                     if old_location == None:
                         if new_location != None:
-                            location_added = True
+                            camera_action = 'add'
                     else:
                         if new_location == None:
-                            location_removed = True
+                            camera_action = 'remove'
                         else:
-                            location_replaced = True
+                            camera_action = 'update'
                 if should_set_obj:
                     set_object_location(tree,
                                     object_location_from_row(row, mapit=mapit))
                     if old_object_location == None:
                         if new_object_location != None:
-                            object_location_added = True
+                            object_action = 'add'
                     else:
                         if new_object_location == None:
-                            object_location_removed = True
+                            object_action = 'remove'
                         else:
-                            object_location_replaced = True
+                            object_action = 'update'
         creditline = creditline_from_row(row)
         if (can_add_creditline(tree, creditline) and
             self.unmodified_on_geograph_since_upload(page, row)):
@@ -248,87 +297,13 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             bot.log("Cannot add credit line")
         newtext = str(tree)
         if newtext != page.text:
-            summary = ""
-            if location_added:
-                if object_location_added:
-                    summary = (
-                        "Add camera and object locations from Geograph (%s)" %
-                        (format_row(row),))
-                elif object_location_replaced:
-                    summary = (
-                        "Add camera location and update object location (%s), "
-                        "both from Geograph (%s)" %
-                        (self.describe_move(old_object_location,
-                                            new_object_location),
-                         format_row(row)))
-                elif object_location_removed:
-                    summary = (
-                        "Add camera location from Geograph (%s) "
-                        "and remove Geograph-derived 1km-precision "
-                        "object location" %
-                        (format_row(row),))                    
-                else:
-                    summary = ("Add camera location from Geograph (%s)" %
-                               (format_row(row),))
-            elif location_replaced:
-                if object_location_added:
-                    summary = (
-                        "Update camera location (%s) and add object location, "
-                        "both from Geograph (%s)" %
-                        (self.describe_move(old_location, new_location),
-                         format_row(row)))
-                elif object_location_replaced:
-                    summary = (
-                        "Update camera and object locations "
-                        "(%s and %s, respectively) "
-                        "from Geograph (%s)" %
-                        (self.describe_move(old_location, new_location),
-                         self.describe_move(old_object_location,
-                                            new_object_location),
-                         format_row(row)))
-                elif object_location_removed:
-                    summary = (
-                        "Update camera location (%s) from Geograph (%s) "
-                        "and remove Geograph-derived 1km-precision "
-                        "object location" %
-                        (self.describe_move(old_location, new_location),
-                         format_row(row)))
-                else:
-                    summary = (
-                        "Update camera location (%s) from Geograph (%s)" %
-                        (self.describe_move(old_location, new_location),
-                         format_row(row)))
-            elif location_removed:
-                if object_location_added:
-                    summary = (
-                        "Remove Geograph-derived camera location "
-                        "(no longer on Geograph, or 1km precision) "
-                        "and add object location from Geograph (%s)" %
-                        (format_row(row),))
-                elif object_location_replaced:
-                    summary = (
-                        "Remove Geograph-derived camera location "
-                        "(no longer on Geograph, or 1km precision) "
-                        "and update object location (%s) from Geograph (%s)" %
-                        (self.describe_move(old_object_location,
-                                            new_object_location),
-                         format_row(row)))
-                else:
-                    summary = (
-                        "Remove Geograph-derived camera location "
-                        "(no longer on Geograph, or 1km precision)")
-            elif object_location_added:
-                summary = (
-                    "Add object location from Geograph (%s)" %
-                    (format_row(row),))
-            elif object_location_replaced:
-                summary = ("Update object location (%s) from Geograph (%s)" %
-                           (self.describe_move(old_object_location,
-                                               new_object_location),
-                            format_row(row)))
-            elif object_location_removed:
-                summary = ("Remove Geograph-derived 1km-precision "
-                           "object location")
+            format_params = dict(
+                row=format_row(row),
+                camera_move=self.describe_move(old_location, new_location),
+                object_move=self.describe_move(old_object_location,
+                                               new_object_location))
+            summary = (self.summary_formats[(camera_action, object_action)]
+                       .format(**format_params))
             if creditline_added:
                 if summary == "":
                     summary = "Add credit line with title from Geograph"
@@ -352,14 +327,14 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             page.text = newtext
             page.save(summary, minor=minor)
             if sdc_edits:
-                # It's slightly incorrect to re-use the main edit
-                # summary, since data may be missing from SDC and we
-                # don't use MapIt for SDC.  I'm not sure it's worth
-                # the effort of changing it, though.
+                sdc_summary = (self.summary_formats[(sdc_camera_action,
+                                                     sdc_object_action)]
+                               .format(**format_params))
+                bot.log("SDC edit summary: %s" % (sdc_summary,))
                 self.site._simple_request(
                     action='wbeditentity', format='json',
                     id='M%d' % (page.pageid,), data=json.dumps(sdc_edits),
-                    token=self.site.tokens['csrf'], summary=summary,
+                    token=self.site.tokens['csrf'], summary=sdc_summary,
                     bot=True, baserevid=revid).submit()
 
     def treat_page(self):
