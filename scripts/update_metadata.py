@@ -236,7 +236,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                             statement_matches_template(s, old_location)):
                             s_new = camera_statement_from_row(row)
                             if s_new == None:
-                                s_new = dict(id=s['id'], delete="")
+                                s_new = dict(id=s['id'], remove="")
                                 bot.log("Removing %s statement %s" %
                                         (s['mainsnak']['property'], s['id']))
                                 sdc_camera_action = 'remove'
@@ -253,7 +253,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                             statement_matches_template(s, old_object_location)):
                             s_new = object_statement_from_row(row)
                             if s_new == None:
-                                s_new = dict(id=s['id'], delete="")
+                                s_new = dict(id=s['id'], remove="")
                                 bot.log("Removing %s statement %s" %
                                         (s['mainsnak']['property'], s['id']))
                                 sdc_object_action = 'remove'
