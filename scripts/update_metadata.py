@@ -297,11 +297,14 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             bot.log("Cannot add credit line")
         newtext = str(tree)
         if newtext != page.text:
-            format_params = dict(
-                row=format_row(row),
-                camera_move=self.describe_move(old_location, new_location),
-                object_move=self.describe_move(old_object_location,
-                                               new_object_location))
+            format_params = dict(row=format_row(row))
+            if camera_action == 'update':
+                format_params['camera_move'] = (
+                    self.describe_move(old_location, new_location))
+            if object_action == 'update':
+                format_params['object_move'] = (
+                    self.describe_move(old_object_location,
+                                       new_object_location))
             summary = (self.summary_formats[(camera_action, object_action)]
                        .format(**format_params))
             if creditline_added:
