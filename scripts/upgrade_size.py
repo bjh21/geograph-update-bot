@@ -148,8 +148,8 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         else:
             if max(fi.width, fi.height) not in (800, 1024):
                 raise NotEligible("dimensions do not match any Geograph image")
-        for fi in page.get_file_history().values():
-            if fi.user == "Geograph Update Bot":
+        for ofi in page.get_file_history().values():
+            if ofi.user == "Geograph Update Bot":
                 raise NotEligible("file already uploaded by me")
         geograph_info = get_geograph_info(gridimage_id)
         if (canonicalise_name(geograph_info['author_name']) !=
