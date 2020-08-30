@@ -104,7 +104,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         (None, None): ""
     }
     def unmodified_on_geograph_since_upload(self, page, row):
-        commons_dt = page.oldest_revision.full_hist_entry().timestamp
+        commons_dt = page.oldest_revision.timestamp
         # For some reason, pywikibot.Timestamps aren't timezone-aware.
         commons_dt = commons_dt.replace(tzinfo=timezone.utc)
         geograph_date = row['upd_timestamp']

@@ -71,10 +71,10 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         bot.log("Geograph ID is %d" % (gridimage_id,))
         return gridimage_id
     def is_geographbot_upload(self, page):
-        firstrev = page.oldest_revision.full_hist_entry()
+        firstrev = page.oldest_revision
         return firstrev.user == 'GeographBot'
     def get_original_tree(self, page):
-        firstrev = page.oldest_revision.full_hist_entry()
+        firstrev = page.oldest_revision
         first_text = page.getOldVersion(firstrev.revid)
         return mwparserfromhell.parse(first_text)        
     def is_original_location(self, page, location_template):
@@ -125,7 +125,7 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 first_description.startswith(title + " ") or
                 first_description.startswith(title + ". "))
     def unmodified_on_geograph_since_upload(self, page, row):
-        commons_dt = page.oldest_revision.full_hist_entry().timestamp
+        commons_dt = page.oldest_revision.timestamp
         # For some reason, pywikibot.Timestamps aren't timezone-aware.
         commons_dt = commons_dt.replace(tzinfo=timezone.utc)
         geograph_date = row['upd_timestamp']
