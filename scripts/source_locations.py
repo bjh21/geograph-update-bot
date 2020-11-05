@@ -97,11 +97,11 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
           if old_location == first_location:
             if (firstrev.comment in
                 ("Transferred from geograph.co.uk using "
-                 "[https://tools.wmflabs.org/geograph2commons/ "
+                 "[https://geograph2commons.toolforge.org/ "
                  "geograph2commons]",
                  # Some uploads have this curious typo'd version of the summary.
                  "Transferred from geograph.co.uk using "
-                 "[https://tools.wmflabs.org/geograph2commons/ "
+                 "[https://geograph2commons.toolforge.org/ "
                  "grograph2commons]")):
                 # Would like to check tag, but pywikibot doesn't seem to
                 # expose it.
