@@ -5,14 +5,14 @@ See <https://phabricator.wikimedia.org/T174351>.
 This patch means that it can overwrite, but I suspect it exposes
 other problems.
 
---- pywikibot/site/_apisite.py~	2021-05-12 14:28:40.387698329 +0100
-+++ pywikibot/site/_apisite.py	2021-05-12 14:34:42.860411435 +0100
-@@ -2891,7 +2891,7 @@
-                 pywikibot.warning('No filekey defined.')
+--- pywikibot/site/_apisite.py~	2021-06-01 15:52:26.034829444 +0100
++++ pywikibot/site/_apisite.py	2021-06-01 15:54:38.534959692 +0100
+@@ -2941,7 +2941,7 @@
+                     pywikibot.warning('No filekey defined.')
  
-             if not report_success:
--                result.setdefault('offset', True)
-+                result.setdefault('offset', False)
-                 if ignore_warnings(create_warnings_list(result)):
-                     return self.upload(
-                         filepage, source_filename=source_filename,
+                 if not report_success:
+-                    result.setdefault('offset', True)
++                    result.setdefault('offset', False)
+                     if ignore_warnings(create_warnings_list(result)):
+                         return self.upload(
+                             filepage, source_filename=source_filename,
