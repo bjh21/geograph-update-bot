@@ -50,9 +50,10 @@ def find_rejected():
                     if titles_by_id[destid]:
                         print("** → [%s %d]: [[:%s]]" %
                               (r.url, destid, titles_by_id[destid]),
+                              file=outfile, flush=True)#
+                    else:
+                        print("** → [%s %d]" % (r.url, destid),
                               file=outfile, flush=True)
-                    print("** → [%s %d]" % (r.url, destid),
-                          file=outfile, flush=True)
         except Exception:
             pass
     reportpage = pywikibot.Page(site,
