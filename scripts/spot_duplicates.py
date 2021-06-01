@@ -32,7 +32,7 @@ def find_duplicates():
     reportpage = pywikibot.Page(site,
                 "User:Geograph Update Bot/duplicate Geograph IDs/data")
     reportpage.text = (
-        "<!-- This page will be overwritten by Geograph Update Bot -->")
+        "<!-- This page will be overwritten by Geograph Update Bot -->\n")
     reportpage.text += outfile.getvalue()
     reportpage.save("New list of duplicate IDs")
 
