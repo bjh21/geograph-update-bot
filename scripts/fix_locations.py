@@ -309,7 +309,7 @@ def main(*args):
     for arg in local_args:
 
         # Catch the pywikibot.pagegenerators options
-        if genFactory.handleArg(arg):
+        if genFactory.handle_arg(arg):
             continue  # nothing to do here
         if arg.startswith("-aistart:"):
             extraparams = { 'gaistart': arg[9:] }

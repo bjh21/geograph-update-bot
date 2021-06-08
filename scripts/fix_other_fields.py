@@ -22,7 +22,7 @@ def main(*args):
     for arg in local_args:
 
         # Catch the pywikibot.pagegenerators options
-        if genFactory.handleArg(arg):
+        if genFactory.handle_arg(arg):
             continue  # nothing to do here
     gen = genFactory.getCombinedGenerator(preload=True)
     if gen:

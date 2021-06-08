@@ -367,7 +367,7 @@ def main(*args):
     for arg in local_args:
 
         # Catch the pywikibot.pagegenerators options
-        if genFactory.handleArg(arg):
+        if genFactory.handle_arg(arg):
             continue  # nothing to do here
     # The preloading option is responsible for downloading multiple
     # pages from the wiki simultaneously.
