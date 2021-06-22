@@ -5,6 +5,9 @@ See <https://phabricator.wikimedia.org/T174351>.
 This patch means that it can overwrite, but I suspect it exposes
 other problems.
 
+The second hunk corrects a simple argument-naming error that I suspect
+was hidden by the first one.
+
 --- pywikibot/site/_apisite.py~	2021-06-01 15:52:26.034829444 +0100
 +++ pywikibot/site/_apisite.py	2021-06-01 15:54:38.534959692 +0100
 @@ -2941,7 +2941,7 @@
@@ -16,3 +19,12 @@ other problems.
                      if ignore_warnings(create_warnings_list(result)):
                          return self.upload(
                              filepage, source_filename=source_filename,
+@@ -2948,7 +2948,7 @@
+                             source_url=source_url, comment=comment,
+                             text=text, watch=watch, ignore_warnings=True,
+                             chunk_size=chunk_size, asynchronous=asynchronous,
+-                            _file_key=_file_key, offset=result['offset'],
++                            _file_key=_file_key, _offset=result['offset'],
+                             report_success=False)
+                     return False
+ 
