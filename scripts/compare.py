@@ -5,10 +5,10 @@ import requests
 import subprocess
 import tempfile
 
-client = requests.Session()
+session = requests.Session()
 
 def url_to_file(url):
-    r = client.get(url)
+    r = session.get(url)
     r.raise_for_status()
     tf = tempfile.NamedTemporaryFile()
     tf.write(r.content)

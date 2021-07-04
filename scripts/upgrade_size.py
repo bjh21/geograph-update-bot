@@ -15,6 +15,7 @@ import sqlite3
 import tempfile
 from requests.exceptions import HTTPError
 from urllib.parse import urlencode
+import compare
 from compare import compare_revisions
 import mwparserfromhell
 
@@ -23,12 +24,14 @@ from gubutil import canonicalise_name, tlgetone, GeoGeneratorFactory
 geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
 
-client = requests.Session()
-client.headers['User-Agent'] = "upgrade_size (bjh21@bjh21.me.uk)"
+session = requests.Session()
+session.headers['User-Agent'] = "upgrade_size (bjh21@bjh21.me.uk)"
+
+compare.session = session
 
 def get_geograph_info(gridimage_id):
     # Use the oEmbed API
-    r = client.get("https://api.geograph.org.uk/api/oembed",
+    r = session.get("https://api.geograph.org.uk/api/oembed",
                      params={'url': 'https://www.geograph.org.uk/photo/%d' %
                                     gridimage_id,
                              'format': 'json'})
@@ -37,14 +40,14 @@ def get_geograph_info(gridimage_id):
     return j
 
 def get_geograph_basic(gridimage_id, info):
-    r = client.get(info['url'])
+    r = session.get(info['url'])
     r.raise_for_status()
     return r.content
 
 def get_geograph_size(gridimage_id, info, size):
     url = get_geograph_size_url(gridimage_id, info, size)
     bot.log("Fetching from %s" % (url,))
-    r = client.get(url)
+    r = session.get(url)
     r.raise_for_status()
     return r.content
 
@@ -71,7 +74,7 @@ def get_geograph_size_url(gridimage_id, info, size):
 def get_geograph_full(gridimage_id, info):
     url = get_geograph_full_url(gridimage_id, info)
     bot.log("Fetching from %s" % (url,))
-    r = client.get(url)
+    r = session.get(url)
     r.raise_for_status()
     return r.content
 
@@ -190,7 +193,7 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         return
     def replace_file_indirect(self, page, newurl):
         bot.log("Fetching from %s" % (newurl,))
-        r = client.get(newurl)
+        r = session.get(newurl)
         r.raise_for_status()
         newimg = r.content
         bot.log("Got %d bytes of image" % (len(newimg),))
