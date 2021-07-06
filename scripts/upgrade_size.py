@@ -29,20 +29,21 @@ def get_geograph_info(gridimage_id):
     r = http.fetch("https://api.geograph.org.uk/api/oembed",
                    params={'url': 'https://www.geograph.org.uk/photo/%d' %
                                   gridimage_id,
-                           'format': 'json'})
+                           'format': 'json'},
+                   headers={'Accept': 'application/json'})
     r.raise_for_status()
     j = r.json()
     return j
 
 def get_geograph_basic(gridimage_id, info):
-    r = session.get(info['url'])
+    r = http.fetch(info['url'], headers={'Accept': 'image/jpeg'})
     r.raise_for_status()
     return r.content
 
 def get_geograph_size(gridimage_id, info, size):
     url = get_geograph_size_url(gridimage_id, info, size)
     bot.log("Fetching from %s" % (url,))
-    r = session.get(url)
+    r = http.fetch(url, headers={'Accept': 'image/jpeg'})
     r.raise_for_status()
     return r.content
 
@@ -69,7 +70,7 @@ def get_geograph_size_url(gridimage_id, info, size):
 def get_geograph_full(gridimage_id, info):
     url = get_geograph_full_url(gridimage_id, info)
     bot.log("Fetching from %s" % (url,))
-    r = session.get(url)
+    r = http.fetch(url, headers={'Accept': 'image/jpeg'})
     r.raise_for_status()
     return r.content
 
@@ -188,7 +189,7 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         return
     def replace_file_indirect(self, page, newurl):
         bot.log("Fetching from %s" % (newurl,))
-        r = session.get(newurl)
+        r = http.fetch(newurl, headers={'Accept': 'image/jpeg'})
         r.raise_for_status()
         newimg = r.content
         bot.log("Got %d bytes of image" % (len(newimg),))
