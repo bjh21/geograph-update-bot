@@ -1,14 +1,12 @@
 import pywikibot
 import pywikibot.bot as bot
+import pywikibot.comms.http as http
 import pywikibot.data.api as api
-import requests
 import subprocess
 import tempfile
 
-session = requests.Session()
-
 def url_to_file(url):
-    r = session.get(url)
+    r = http.fetch(url)
     r.raise_for_status()
     tf = tempfile.NamedTemporaryFile()
     tf.write(r.content)

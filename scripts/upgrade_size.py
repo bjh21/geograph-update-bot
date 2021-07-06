@@ -6,11 +6,11 @@ import pywikibot
 from pywikibot.bot import (
     SingleSiteBot, ExistingPageBot, NoRedirectPageBot, AutomaticTWSummaryBot)
 import pywikibot.bot as bot
+import pywikibot.comms.http as http
 import pywikibot.data.api as api
 import pywikibot.pagegenerators
 from pywikibot.page import FilePage
 import re
-import requests
 import sqlite3
 import tempfile
 from requests.exceptions import HTTPError
@@ -24,17 +24,12 @@ from gubutil import canonicalise_name, tlgetone, GeoGeneratorFactory
 geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
 
-session = requests.Session()
-session.headers['User-Agent'] = "upgrade_size (bjh21@bjh21.me.uk)"
-
-compare.session = session
-
 def get_geograph_info(gridimage_id):
     # Use the oEmbed API
-    r = session.get("https://api.geograph.org.uk/api/oembed",
-                     params={'url': 'https://www.geograph.org.uk/photo/%d' %
-                                    gridimage_id,
-                             'format': 'json'})
+    r = http.fetch("https://api.geograph.org.uk/api/oembed",
+                   params={'url': 'https://www.geograph.org.uk/photo/%d' %
+                                  gridimage_id,
+                           'format': 'json'})
     r.raise_for_status()
     j = r.json()
     return j
