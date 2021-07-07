@@ -3,17 +3,14 @@ from __future__ import print_function
 from io import StringIO
 import pywikibot
 import pywikibot.bot as bot
+import pywikibot.comms.http as http
 import pywikibot.data.api as api
 import pywikibot.pagegenerators
-import requests
 import sqlite3
 from urllib.parse import urlsplit
 
 geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
 geodb.row_factory = sqlite3.Row
-
-client = requests.Session()
-client.headers['User-Agent'] = "spot_rejected (bjh21@bjh21.me.uk)"
 
 def find_rejected():
     outfile = StringIO()
@@ -42,9 +39,9 @@ def find_rejected():
                 print("* [https://www.geograph.org.uk/photo/%d %d]: [[:%s]]" %
                       (gridimage_id, gridimage_id, item['title']),
                       file=outfile, flush=True)
-                r = requests.head(
+                r = http.fetch(
                     'https://www.geograph.org.uk/photo/%d' % (gridimage_id,),
-                    allow_redirects=True)
+                    method='HEAD', allow_redirects=True)
                 if r.status_code == 200:
                     destid = int(urlsplit(r.url).path.rpartition('/')[2])
                     if titles_by_id[destid]:
