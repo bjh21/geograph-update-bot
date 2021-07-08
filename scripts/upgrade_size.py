@@ -221,20 +221,6 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             print("%d: %s" % (gridimage_id, str(e)), file=whynot)
             bot.error(str(e))
 
-def merge_generators(*gens):
-    pendings = [{} for _ in gens]
-    for items in zip_longest(*gens):
-        for i, item in enumerate(items):
-            if item == None: continue
-            key = item['title']
-            pendings[i][key] = item
-            if all([key in pending for pending in pendings]):
-                ret = { }
-                for pending in pendings:
-                    ret.update(pending[key])
-                    del pending[key]
-                yield ret
-
 def InterestingGeographsByNumber(**kwargs):
     site = kwargs['site']
     # Fetch starting ID from a special page.
@@ -242,16 +228,14 @@ def InterestingGeographsByNumber(**kwargs):
     start = int(startpage.text)
     startsortkeyprefix=" %08d" % (start,)
     n = 0
-    g0 = api.ListGenerator("categorymembers", parameters=dict(
-            cmtitle="Category:Images from Geograph Britain and Ireland",
-            cmprop="title|sortkeyprefix", cmtype="file",
-            cmstartsortkeyprefix=startsortkeyprefix), **kwargs)
-    g1 = api.QueryGenerator(parameters=dict(
+    g = api.QueryGenerator(parameters=dict(
         generator="categorymembers",
         gcmtitle="Category:Images from Geograph Britain and Ireland",
         gcmtype="file", gcmstartsortkeyprefix=startsortkeyprefix,
-        prop="imageinfo", iiprop="size"), **kwargs)
-    for page in InterestingGeographGenerator(site, g0, g1):
+        prop="categories|imageinfo", cllimit="max", clprop="sortkey",
+        clcategories="Category:Images from Geograph Britain and Ireland",
+        iiprop="size"), **kwargs)
+    for page in InterestingGeographGenerator(site, g):
         yield page
         n = n + 1;
         if (n % 50 == 0):
@@ -261,24 +245,25 @@ def InterestingGeographsByNumber(**kwargs):
 
 def InterestingGeographsByDate(**kwargs):
     site = kwargs['site']
-    g0 = api.ListGenerator("categorymembers", parameters=dict(
-            cmtitle="Category:Images from Geograph Britain and Ireland",
-            cmprop="title|sortkeyprefix", cmtype="file",
-            cmsort="timestamp", cmdir="older",
-            ), **kwargs)
-    g1 = api.QueryGenerator(parameters=dict(
+    g = api.QueryGenerator(parameters=dict(
         generator="categorymembers",
         gcmtitle="Category:Images from Geograph Britain and Ireland",
         gcmtype="file",
         gcmsort="timestamp", gcmdir="older",
-        prop="imageinfo", iiprop="size"), **kwargs)
-    yield from InterestingGeographGenerator(site, g0, g1)
+        prop="categories|imageinfo", cllimit="max", clprop="sortkey",
+        clcategories="Category:Images from Geograph Britain and Ireland",
+        iiprop="size"), **kwargs)
+    yield from InterestingGeographGenerator(site, g)
 
-def InterestingGeographGenerator(site, g0, g1):
-    for item in merge_generators(g0, g1):
+def InterestingGeographGenerator(site, g):
+    for item in g:
+        bot.log(repr(item))
         try:
-            gridimage_id = int(item['sortkeyprefix'])
-        except ValueError:
+            # We only request a single category, and every file we get
+            # is guaranteed to be a member of it, so the "[0]" here
+            # should be safe.
+            gridimage_id = int(item['categories'][0]['sortkeyprefix'])
+        except (ValueError):
             # Unparseable sort key.  Skip it.
             continue
         try:
