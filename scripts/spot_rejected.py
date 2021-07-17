@@ -58,7 +58,8 @@ def find_rejected():
     reportpage.text = (
         "<!-- This page will be overwritten by Geograph Update Bot -->\n")
     reportpage.text += outfile.getvalue()
-    reportpage.save("New list of rejected IDs")
+    reportpage.save("[[User:Geograph Update Bot/REJR|New list]] "
+                    "of rejected IDs")
 
 def main(*args):
     # Process global arguments to determine desired site

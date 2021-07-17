@@ -60,47 +60,58 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
     summary_formats = {
         # (camera_action, object_action)
         ('add', 'add'):
-        "Add camera and object locations from Geograph ({row})",
+        "[[User:Geograph Update Bot/GEO|Add]] camera and object locations "
+        "from Geograph ({row})",
         ('add', 'update'):
-        "Add camera location and update object location ({object_move}), "
-        "both from Geograph ({row})",
+        "[[User:Geograph Update Bot/GEO|Add]] camera location and "
+        "[[User:Geograph Update Bot/GEO|update]] object location
+        ({object_move}), both from Geograph ({row})",
         ('add', 'remove'):
-        "Add camera location from Geograph ({row}) "
-        "and remove Geograph-derived 1km-precision "
-        "object location",
+        "[[User:Geograph Update Bot/GEO|Add]] camera location from "
+        "Geograph ({row}) and [[User:Geograph Update Bot/GEO|remove]] "
+        "Geograph-derived 1km-precision object location",
         ('add', None):
-        "Add camera location from Geograph ({row})",
+        "[[User:Geograph Update Bot/GEO|Add]] camera location from Geograph "
+        "({row})",
         ('update', 'add'):
-        "Update camera location ({camera_move}) and add object location, "
-        "both from Geograph ({row})",
+        "[[User:Geograph Update Bot/GEO|Update]] camera location "
+        "({camera_move}) and [[User:Geograph Update Bot/GEO|add]] object "
+        "location, both from Geograph ({row})",
         ('update', 'update'):
-        "Update camera and object locations "
+        "[[User:Geograph Update Bot/GEO|Update]] camera and object locations "
         "({camera_move} and {object_move}, respectively) "
         "from Geograph ({row})",
         ('update', 'remove'):
-        "Update camera location ({camera_move}) from Geograph ({row}) "
-        "and remove Geograph-derived 1km-precision "
-        "object location",
+        "[[User:Geograph Update Bot/GEO|Update]] camera location "
+        "({camera_move}) from Geograph ({row}) "
+        "and [[User:Geograph Update Bot/GEO|remove]] Geograph-derived "
+        "1km-precision object location",
         ('update', None):
-        "Update camera location ({camera_move}) from Geograph ({row})",
+        "[[User:Geograph Update Bot/GEO|Update]] camera location "
+        "({camera_move}) from Geograph ({row})",
         ('remove', 'add'):
-        "Remove Geograph-derived camera location "
-        "(no longer on Geograph, or 1km precision) "
-        "and add object location from Geograph ({row})",
+        "[[User:Geograph Update Bot/GEO|Remove]] Geograph-derived camera "
+        "location (no longer on Geograph, or 1km precision) "
+        "and [[User:Geograph Update Bot/GEO|add]] object location from "
+        "Geograph ({row})",
         ('remove', 'update'):
-        "Remove Geograph-derived camera location "
-        "(no longer on Geograph, or 1km precision) "
-        "and update object location ({object_move}) from Geograph ({row})",
+        "[[User:Geograph Update Bot/GEO|Remove]] Geograph-derived camera "
+        "location (no longer on Geograph, or 1km precision) "
+        "and [[User:Geograph Update Bot/GEO|update]] object location "
+        "({object_move}) from Geograph ({row})",
         # ('remove', 'remove') should be impossible
         ('remove', None):
-        "Remove Geograph-derived camera location "
-        "(no longer on Geograph, or 1km precision)",
+        "[[User:Geograph Update Bot/GEO|Remove]] Geograph-derived camera "
+        "location (no longer on Geograph, or 1km precision)",
         (None, 'add'):
-        "Add object location from Geograph ({row})",
+        "[[User:Geograph Update Bot/GEO|Add]] object location from Geograph "
+        "({row})",
         (None, 'update'):
-        "Update object location ({object_move}) from Geograph ({row})",
+        "[[User:Geograph Update Bot/GEO|Update]] object location "
+        "({object_move}) from Geograph ({row})",
         (None, 'remove'):
-        "Remove Geograph-derived 1km-precision object location",
+        "[[User:Geograph Update Bot/GEO|Remove]] Geograph-derived "
+        "1km-precision object location",
         (None, None): ""
     }
     def unmodified_on_geograph_since_upload(self, page, row):
@@ -309,9 +320,11 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                        .format(**format_params))
             if creditline_added:
                 if summary == "":
-                    summary = "Add credit line with title from Geograph"
+                    summary = ("[[User:Geograph Update Bot/CRED|Add]] "
+                               "credit line with title from Geograph")
                 else:
-                    summary += "; add credit line with title from Geograph"
+                    summary += ("; [[User:Geograph Update Bot/CRED|add]] "
+                                "credit line with title from Geograph")
             if mapit.used:
                 # Requested credit where MapIt is used:
                 # 'Attribution should use the text “Powered by MapIt”,

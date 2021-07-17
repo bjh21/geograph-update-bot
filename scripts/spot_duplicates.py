@@ -34,7 +34,8 @@ def find_duplicates():
     reportpage.text = (
         "<!-- This page will be overwritten by Geograph Update Bot -->\n")
     reportpage.text += outfile.getvalue()
-    reportpage.save("New list of duplicate IDs")
+    reportpage.save("[[User:Geograph Update Bot/DUPR|New list]] "
+                    "of duplicate IDs")
 
 def main(*args):
     # Process global arguments to determine desired site
