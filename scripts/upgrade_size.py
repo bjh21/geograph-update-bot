@@ -96,6 +96,20 @@ class MajorProblem(Exception):
 class BadGeographDatabase(MajorProblem):
     pass
 
+def whynot_setup():
+    global whynot_db
+    whynot_db = sqlite3.connect('whynot.sqlite3')
+    whynot_db.execute("""CREATE TABLE IF NOT EXISTS whynot
+                         (last_checked DATE DEFAULT (date('now')),
+                          gridimage_id INTEGER PRIMARY KEY,
+                          whynot TEXT)""")
+
+def whynot(gridimage_id, message):
+    whynot_db.execute("""INSERT OR REPLACE INTO whynot (gridimage_id, whynot)
+                                         VALUES (?, ?)""",
+                      (gridimage_id, message))
+    whynot_db.commit()
+
 class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
     def __init__(self, generator, **kwargs):
         # call constructor of the super class
@@ -197,16 +211,16 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 return # Not a file page
             self.process_page(FilePage(self.current_page))
         except NotEligible as e:
-            print("%d: %s" % (gridimage_id, str(e)), file=whynot)
+            whynot(gridimage_id, str(e))
             bot.log(str(e))
         except MinorProblem as e:
-            print("%d: %s" % (gridimage_id, str(e)), file=whynot)
+            whynot(gridimage_id, str(e))
             bot.warning(str(e))
         except MajorProblem as e:
-            print("%d: %s" % (gridimage_id, str(e)), file=whynot)
+            whynot(gridimage_id, str(e))
             bot.error(str(e))
         except HTTPError as e:
-            print("%d: %s" % (gridimage_id, str(e)), file=whynot)
+            whynot(gridimage_id, str(e))
             bot.error(str(e))
 
 def InterestingGeographsByNumber(**kwargs):
@@ -277,7 +291,7 @@ def InterestingGeographGenerator(site, g):
                 # We already have the full-resolution version.
                 raise NotEligible("high-res version already uploaded")
         except NotEligible as e:
-            print("%d: %s" % (gridimage_id, str(e)), file=whynot)
+            whynot(gridimage_id, str(e))
             continue
         except Exception:
             pass # Anything odd happens, yield the item for further inspection.
@@ -311,8 +325,7 @@ def main(*args):
     if not gen:
         gen = InterestingGeographsByDate(site=pywikibot.Site())
     if gen:
-        global whynot
-        whynot = open("whynot", "w")
+        whynot_setup()
         # pass generator and private options to the bot
         bot = UpgradeSizeBot(gen, **options)
         bot.run()  # guess what it does
