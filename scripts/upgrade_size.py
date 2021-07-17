@@ -187,18 +187,6 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if not success:
             raise UploadFailed("upload from %s to %s failed" % (newurl, page))
         return
-    def replace_file_indirect(self, page, newurl):
-        bot.log("Fetching from %s" % (newurl,))
-        r = http.fetch(newurl, headers={'Accept': 'image/jpeg'})
-        r.raise_for_status()
-        newimg = r.content
-        bot.log("Got %d bytes of image" % (len(newimg),))
-        tf = tempfile.NamedTemporaryFile()
-        tf.write(newimg)
-        tf.flush()
-        bot.log("File written to %s" % (tf.name,))
-        page.upload(tf.name, comment="Higher-resolution version from Geograph.",
-                    ignore_warnings=['exists'])
 
     def treat_page(self):
         try:
