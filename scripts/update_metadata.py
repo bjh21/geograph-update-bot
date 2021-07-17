@@ -314,10 +314,10 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     summary += "; add credit line with title from Geograph"
             if mapit.used:
                 # Requested credit where MapIt is used:
-                # 'Please attribute us with the text “Powered by Mapit”
-                # and a link back to the MapIt front page.'
+                # 'Attribution should use the text “Powered by MapIt”,
+                # with a link back to this page.'
                 summary += (
-                    " [powered by MapIt: http://global.mapit.mysociety.org]")
+                    " [Powered by MapIt: https://global.mapit.mysociety.org]")
             bot.log("edit summary: %s" % (summary,))
             # Before we save, make sure pywikibot's view of the latest
             # revision hasn't changed.  If it has, that invalidates
