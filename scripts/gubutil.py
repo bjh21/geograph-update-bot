@@ -62,7 +62,6 @@ def GeographBotUploads(parameters = None, **kwargs):
     if parameters == None: parameters = { }
     parameters['gaiuser'] = 'GeographBot'
     parameters['gaisort'] = 'timestamp'
-    print(parameters)
     return api.PageGenerator("allimages", parameters=parameters, **kwargs)
 
 import sqlite3
