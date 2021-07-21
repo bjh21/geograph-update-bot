@@ -260,7 +260,6 @@ def InterestingGeographsByDate(**kwargs):
 
 def InterestingGeographGenerator(site, g):
     for item in g:
-        bot.log(repr(item))
         try:
             # We only request a single category, and every file we get
             # is guaranteed to be a member of it, so the "[0]" here
