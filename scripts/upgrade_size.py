@@ -197,7 +197,7 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         bot.log("Uploading from %s" % (newurl,))
         success = page.upload(newurl, 
                               comment="[[User:Geograph Update Bot/RES|"
-                              "Higher-resolution version]] from Geograph",
+                              "Higher-resolution]] version from Geograph",
                         ignore_warnings=['exists'])
         if not success:
             raise UploadFailed("upload from %s to %s failed" % (newurl, page))
