@@ -6,17 +6,25 @@ import pywikibot
 import pywikibot.bot as bot
 import pywikibot.data.api as api
 import pywikibot.pagegenerators
+import sys
 
 def find_duplicates():
     last_id = dup_id = -1
     outfile = StringIO()
     site = pywikibot.Site()
     for gridimage_id, items in groupby(
-            api.ListGenerator(
-                "categorymembers", site=site,
-                cmtitle="Category:Images from Geograph Britain and Ireland",
-                cmprop="title|sortkeyprefix", cmtype="file"),
-            key=lambda page: int(page['sortkeyprefix'])):
+            api.QueryGenerator(
+                site=site, parameters=dict(
+                    generator="categorymembers",
+                    gcmtitle=
+                    "Category:Images from Geograph Britain and Ireland",
+                    gcmtype="file",
+                    prop="categories|imageinfo", cllimit="max",
+                    clprop="sortkey",
+                    clcategories=
+                    "Category:Images from Geograph Britain and Ireland",
+                    iiprop="size")),
+            key=lambda page: int(page['categories'][0]['sortkeyprefix'])):
         try:
             print(gridimage_id, end="\r")
             items = list(items)
