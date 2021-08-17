@@ -19,11 +19,12 @@ def find_duplicates():
                     gcmtitle=
                     "Category:Images from Geograph Britain and Ireland",
                     gcmtype="file",
-                    prop="categories|imageinfo|images", cllimit="max",
-                    clprop="sortkey",
+                    prop="categories|imageinfo|images|links",
+                    cllimit="max", clprop="sortkey",
                     clcategories=
                     "Category:Images from Geograph Britain and Ireland",
-                    iiprop="size", imlimit="max")),
+                    iiprop="size", imlimit="max",
+                    plnamespace="6", pllimit="max")),
             key=lambda page: int(page['categories'][0]['sortkeyprefix'])):
         try:
             print(gridimage_id, end="\r")
@@ -31,7 +32,8 @@ def find_duplicates():
             if len(items) > 1:
                 crosslinks = set([(s['title'], d['title'])
                                   for s in items
-                                  for d in s.get('images', [])])
+                                  for d in s.get('images', []) +
+                                           s.get('links', [])])
                 relevant_titles = set([i['title'] for i in items])
                 crosslinks = set([(i, j) for i, j in crosslinks
                                   if i != j and j in relevant_titles])
