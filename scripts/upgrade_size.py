@@ -8,6 +8,7 @@ from pywikibot.bot import (
 import pywikibot.bot as bot
 import pywikibot.comms.http as http
 import pywikibot.data.api as api
+from pywikibot.exceptions import APIError
 import pywikibot.pagegenerators
 from pywikibot.page import FilePage
 import re
@@ -221,6 +222,9 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             whynot(gridimage_id, str(e))
             bot.error(str(e))
         except HTTPError as e:
+            whynot(gridimage_id, str(e))
+            bot.error(str(e))
+        except APIError as e:
             whynot(gridimage_id, str(e))
             bot.error(str(e))
 
