@@ -19,26 +19,41 @@ def find_duplicates():
                     gcmtitle=
                     "Category:Images from Geograph Britain and Ireland",
                     gcmtype="file",
-                    prop="categories|imageinfo", cllimit="max",
+                    prop="categories|imageinfo|images", cllimit="max",
                     clprop="sortkey",
                     clcategories=
                     "Category:Images from Geograph Britain and Ireland",
-                    iiprop="size")),
+                    iiprop="size", imlimit="max")),
             key=lambda page: int(page['categories'][0]['sortkeyprefix'])):
         try:
             print(gridimage_id, end="\r")
             items = list(items)
             if len(items) > 1:
+                crosslinks = set([(s['title'], d['title'])
+                                  for s in items
+                                  for d in s.get('images', [])])
+                relevant_titles = set([i['title'] for i in items])
+                crosslinks = set([(i, j) for i, j in crosslinks
+                                  if i != j and j in relevant_titles])
                 print(
                     "* [https://www.geograph.org.uk/photo/%d %d]" %
                     (gridimage_id, gridimage_id), file=outfile)
                 for item in items:
-                    print("** (%d × %d) [[:%s]]" %
+                    inlinks = set([(s, d) for s, d in crosslinks
+                                   if d == item['title']])
+                    outlinks = set([(s, d) for s, d in crosslinks
+                                    if s == item['title']])
+                    bidilinks = set([(s, d) for s, d in inlinks
+                                     if (d, s) in outlinks])
+                    print("** (%d × %d) %s[[:%s]]" %
                           (item['imageinfo'][0]['width'],
                            item['imageinfo'][0]['height'],
+                           "⇌ " * len(bidilinks) +
+                           "→ " * (len(outlinks) - len(bidilinks)) +
+                           "← " * (len(inlinks) - len(bidilinks)),
                            item['title'],), file=outfile, flush=True)
-        except Exception:
-            pass
+        except Exception as e:
+            print("<!-- Exception: %s -->" % e, file=outfile, flush=True)
     reportpage = pywikibot.Page(site,
                 "User:Geograph Update Bot/duplicate Geograph IDs/data")
     reportpage.text = (
