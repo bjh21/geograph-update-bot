@@ -30,23 +30,23 @@ def find_duplicates():
             print(gridimage_id, end="\r")
             items = list(items)
             if len(items) > 1:
-                crosslinks = set([(s['title'], d['title'])
-                                  for s in items
-                                  for d in s.get('images', []) +
-                                           s.get('links', [])])
-                relevant_titles = set([i['title'] for i in items])
-                crosslinks = set([(i, j) for i, j in crosslinks
-                                  if i != j and j in relevant_titles])
+                crosslinks = {(s['title'], d['title'])
+                              for s in items
+                              for d in
+                                s.get('images', []) + s.get('links', [])}
+                relevant_titles = {i['title'] for i in items}
+                crosslinks = {(i, j) for i, j in crosslinks
+                              if i != j and j in relevant_titles}
                 print(
                     "* [https://www.geograph.org.uk/photo/%d %d]" %
                     (gridimage_id, gridimage_id), file=outfile)
                 for item in items:
-                    inlinks = set([(s, d) for s, d in crosslinks
-                                   if d == item['title']])
-                    outlinks = set([(s, d) for s, d in crosslinks
-                                    if s == item['title']])
-                    bidilinks = set([(s, d) for s, d in inlinks
-                                     if (d, s) in outlinks])
+                    inlinks = {(s, d) for s, d in crosslinks
+                               if d == item['title']}
+                    outlinks = {(s, d) for s, d in crosslinks
+                                if s == item['title']}
+                    bidilinks = {(s, d) for s, d in inlinks
+                                     if (d, s) in outlinks}
                     print("** (%d × %d) %s[[:%s]]" %
                           (item['imageinfo'][0]['width'],
                            item['imageinfo'][0]['height'],
