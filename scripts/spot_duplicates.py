@@ -33,8 +33,10 @@ def find_duplicates():
                     "* [https://www.geograph.org.uk/photo/%d %d]" %
                     (gridimage_id, gridimage_id), file=outfile)
                 for item in items:
-                    print("** [[:%s]]" % (item['title'],), file=outfile,
-                          flush=True)
+                    print("** (%d × %d) [[:%s]]" %
+                          (item['imageinfo'][0]['width'],
+                           item['imageinfo'][0]['height'],
+                           item['title'],), file=outfile, flush=True)
         except Exception:
             pass
     reportpage = pywikibot.Page(site,
