@@ -51,8 +51,8 @@ def find_duplicates():
                           (item['imageinfo'][0]['width'],
                            item['imageinfo'][0]['height'],
                            "⇌ " * len(bidilinks) +
-                           "→ " * (len(outlinks) - len(bidilinks)) +
-                           "← " * (len(inlinks) - len(bidilinks)),
+                           "← " * (len(outlinks) - len(bidilinks)) +
+                           "→ " * (len(inlinks) - len(bidilinks)),
                            item['title'],), file=outfile, flush=True)
         except Exception as e:
             print("<!-- Exception: %s -->" % e, file=outfile, flush=True)
