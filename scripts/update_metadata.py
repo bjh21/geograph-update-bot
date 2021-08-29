@@ -64,8 +64,8 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         "from Geograph ({row})",
         ('add', 'update'):
         "[[User:Geograph Update Bot/GEO|Add]] camera location and "
-        "[[User:Geograph Update Bot/GEO|update]] object location
-        ({object_move}), both from Geograph ({row})",
+        "[[User:Geograph Update Bot/GEO|update]] object location "
+        "({object_move}), both from Geograph ({row})",
         ('add', 'remove'):
         "[[User:Geograph Update Bot/GEO|Add]] camera location from "
         "Geograph ({row}) and [[User:Geograph Update Bot/GEO|remove]] "
