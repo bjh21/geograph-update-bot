@@ -1,6 +1,7 @@
 # Useful stuff for all tasks of Geograph Update Bot.
 
 from functools import partial
+from itertools import filterfalse
 import re
 
 # Template searching functions.
@@ -52,11 +53,18 @@ import pywikibot.data.api as api
 
 def NewGeographImages(parameters = None, **kwargs):
     if parameters == None: parameters = dict()
-    return api.PageGenerator("categorymembers", parameters=dict(
-        gcmtitle="Category:Images from Geograph Britain and Ireland",
-        gcmtype="file",
-        gcmsort="timestamp", gcmdir="older", **parameters),
-        **kwargs)
+    def botupload(page):
+        # Heuristic for spotting uploads that don't need our attention.
+        # This shouldn't cause an API call because PageGenerator loads
+        # the entire file history anyway.
+        return page.latest_file_info.user == "GeographBot"
+    return filterfalse(
+        botupload,
+        api.PageGenerator("categorymembers", parameters=dict(
+            gcmtitle="Category:Images from Geograph Britain and Ireland",
+            gcmtype="file",
+            gcmsort="timestamp", gcmdir="older", **parameters),
+                          **kwargs))
 
 def GeographBotUploads(parameters = None, **kwargs):
     if parameters == None: parameters = { }
