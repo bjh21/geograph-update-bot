@@ -135,8 +135,8 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
 
         newtext = str(tree)
         if newtext != page.text:
-            summary = ("Mark Geograph-derived location (%s) with appropriate "
-                       "\"source\" parameter" % (reason,))
+            summary = ("Marked Geograph-derived location (%s) with "
+                       "appropriate \"source\" parameter" % (reason,))
             bot.log("edit summary: %s" % (summary,))
             # Before we save, make sure pywikibot's view of the latest
             # revision hasn't changed.  If it has, that invalidates

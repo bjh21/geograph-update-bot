@@ -61,7 +61,7 @@ def find_duplicates():
     reportpage.text = (
         "<!-- This page will be overwritten by Geograph Update Bot -->\n")
     reportpage.text += outfile.getvalue()
-    reportpage.save("[[User:Geograph Update Bot/DUPR|New list]] "
+    reportpage.save("[[User:Geograph Update Bot/DUPR|Updated]] list "
                     "of duplicate IDs")
 
 def main(*args):

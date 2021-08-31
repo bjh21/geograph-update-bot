@@ -219,47 +219,47 @@ class FixLocationBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             if location_replaced:
                 if object_location_added:
                     summary = (
-                        "Replace dubious [[User:GeographBot|GeographBot]]-"
+                        "Replaced dubious [[User:GeographBot|GeographBot]]-"
                         "sourced camera location (moved %.1f m %s) and "
-                        "add object location, both from Geograph (%s)" %
+                        "added object location, both from Geograph (%s)" %
                         (distance, format_direction(azon), format_row(row)))
                 else:
                     summary = (
-                        "Replace dubious [[User:GeographBot|GeographBot]]-"
+                        "Replaced dubious [[User:GeographBot|GeographBot]]-"
                         "sourced camera location (moved %.1f m %s), "
                         "from Geograph (%s)" %
                         (distance, format_direction(azon), format_row(row)))
             elif location_removed:
                 if location_was_mine:
                     summary = (
-                        "Remove vague camera location (probably added by me)")
+                        "Removed vague camera location (probably added by me)")
                 else:
                     summary = (
-                        "Remove dubious [[User:GeographBot|GeographBot]]-"
+                        "Removed dubious [[User:GeographBot|GeographBot]]-"
                         "sourced camera location")
                 if object_location_added:
                     summary += (
-                        " and add object location from Geograph (%s)" %
+                        " and added object location from Geograph (%s)" %
                         (format_row(row),))
             elif location_added:
                 if object_location_added:
                     summary = (
-                        "Add camera and object locations from Geograph (%s)" %
+                        "Added camera and object locations from Geograph (%s)" %
                         (format_row(row),))
                 else:
-                    summary = ("Add camera location from Geograph (%s)" %
+                    summary = ("Added camera location from Geograph (%s)" %
                                (format_row(row),))
             elif object_location_added:
                 summary = (
-                    "Add object location from Geograph (%s)" %
+                    "Added object location from Geograph (%s)" %
                     (format_row(row),))
             else:
                 summary = ""
             if creditline_added:
                 if summary == "":
-                    summary = "Add credit line with title from Geograph"
+                    summary = "Added credit line with title from Geograph"
                 else:
-                    summary += "; add credit line with title from Geograph"
+                    summary += "; added credit line with title from Geograph"
             bot.log("edit summary: %s" % (summary,))
             # Before we save, make sure pywikibot's view of the latest
             # revision hasn't changed.  If it has, that invalidates

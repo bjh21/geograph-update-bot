@@ -29,7 +29,7 @@ def mark_for_attention(site, title, comment):
     bot.log("marking for human review")
     page = pywikibot.Page(site, title)
     page.text += "\n[[Category:Dubious uploads by Geograph Update Bot]]"
-    page.save("Marking last upload for human attention (%s)"
+    page.save("Marked last upload for human attention (%s)"
               % (comment,))
 
 def compare_revisions(site, parameters):
