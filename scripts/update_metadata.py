@@ -245,6 +245,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     statements = self.get_sdc_statements(page)
                     for s in statements.get('P1259', []):
                         if should_set_cam and old_location != None:
+                            bot.log("Considering P1259 update")
                             if not statement_matches_template(s, old_location):
                                 raise SDCMismatch("SDC/template mismatch: "
                                                   "%s vs %s",
@@ -264,6 +265,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                             sdc_edits['claims'].append(s_new)
                     for s in statements.get('P625', []):
                         if should_set_obj and old_object_location != None:
+                            bot.log("Considering P625 update")
                             if not statement_matches_template(
                                     s, old_object_location):
                                 raise SDCMismatch("SDC/template mismatch: "
