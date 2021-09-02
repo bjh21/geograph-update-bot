@@ -46,6 +46,8 @@ class NotInGeographDatabase(MinorProblem):
     pass
 class UploadFailed(MinorProblem):
     pass
+class SDCMismatch(MinorProblem):
+    pass
 class MajorProblem(Exception):
     pass
 class BadGeographDatabase(MajorProblem):
@@ -242,9 +244,11 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                     # Check if SDC has location templates.
                     statements = self.get_sdc_statements(page)
                     for s in statements.get('P1259', []):
-                        if (should_set_cam and
-                            old_location != None and
-                            statement_matches_template(s, old_location)):
+                        if should_set_cam and old_location != None:
+                            if not statement_matches_template(s, old_location):
+                                raise SDCMismatch("SDC/template mismatch: "
+                                                  "%s vs %s",
+                                                  (s, old_location))
                             s_new = camera_statement_from_row(row)
                             if s_new == None:
                                 s_new = dict(id=s['id'], remove="")
@@ -259,9 +263,12 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                             sdc_edits.setdefault('claims', [])
                             sdc_edits['claims'].append(s_new)
                     for s in statements.get('P625', []):
-                        if (should_set_obj and
-                            old_object_location != None and
-                            statement_matches_template(s, old_object_location)):
+                        if should_set_obj and old_object_location != None:
+                            if not statement_matches_template(
+                                    s, old_object_location):
+                                raise SDCMismatch("SDC/template mismatch: "
+                                                  "%s vs %s",
+                                                  (s, old_object_location))
                             s_new = object_statement_from_row(row)
                             if s_new == None:
                                 s_new = dict(id=s['id'], remove="")
