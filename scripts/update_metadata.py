@@ -169,10 +169,6 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                                             ids=mediaid)
         data = request.submit()
         return data['entities'][mediaid].get('statements', {})
-    def has_sdc_geocoding(self, page):
-        statements = self.get_sdc_statements(page)
-        return ('P625' in statements or
-                'P1259' in statements)
     def process_page(self, page):
         camera_action = None
         object_action = None
