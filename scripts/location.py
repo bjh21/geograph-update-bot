@@ -270,10 +270,7 @@ def object_statement_from_row(row):
     if digits == 4 and camera_statement_from_row(row) != None:
         return None
     s = statement_from_grid(grid, e, n, digits, heading, use6fig)
-    s['mainsnak']['property'] = "P625"
-    # Heading appears only to be used on P1259, not on P625.
-    if "P7787" in s.get('qualifiers', {}):
-        del s['qualifiers']['P7787']
+    s['mainsnak']['property'] = "P9149"
     return s
 
 # Determine whether a structured data statement is equivalent to a
@@ -287,7 +284,7 @@ def statement_matches_template(statement, template):
     # to recognise its handiwork.
 
     # First check that the statement has the right property.
-    if not ((statement['mainsnak']['property'] == 'P625' and
+    if not ((statement['mainsnak']['property'] == 'P9149' and
              template.name in objtls) or
             (statement['mainsnak']['property'] == 'P1259' and
              template.name in loctls)):
@@ -304,11 +301,8 @@ def statement_matches_template(statement, template):
             float(statement_value['longitude']) == float(str(template.get(2)))):
         return False
     # We deliberately ignore precision.
-    # If this is an object location there should be no qualifier.
-    if (statement['mainsnak']['property'] == 'P625' and
-        statement.get('qualifiers', {}) != {}): return False
-    # If it's a camera location, there might be a bearing.
-    if (statement['mainsnak']['property'] == 'P1259' and
+    # There might be a bearing.
+    if (statement['mainsnak']['property'] in ('P1259', 'P9149') and
         list(statement.get('qualifiers', {}).keys()) not in
         ([], ['P7787'])): return False
     # If there is a bearing, check its structure.
@@ -334,7 +328,7 @@ def statement_matches_template(statement, template):
 def location_statement_from_row(row):
     """
     Notes:
-    P625 -> lat, lon, prec
+    P9149 -> lat, lon, prec
     P1259 -> lat, lon, prec
       P7787 -> hdg, hdg - 11.25, hdg + 11.25, Q28390
     refs:
