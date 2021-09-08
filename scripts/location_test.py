@@ -23,13 +23,13 @@ class FromGridTests(unittest.TestCase):
     def test_stmt_from_grid(self):
         a = statement_from_grid(bng, 380980, 201340, 8, 292, True)
         self.assertEqual(a, {
-            'type': 'statement',
+            'type': 'statement', 'rank': 'normal',
             'mainsnak': {
                 'snaktype': 'value', 'property': "P1259",
                 'datavalue': {
                     'type': 'globecoordinate', 'value': {
                         'globe': "http://www.wikidata.org/entity/Q2",
-                        'latitude': "51.71051", 'longitude': "-2.2766",
+                        'latitude': 51.71051, 'longitude': -2.2766,
                         'precision': 0.002 }
                 }
             },
@@ -95,11 +95,11 @@ class FromRowTests(unittest.TestCase):
     def test_full_row_cstmt(self):
         s = camera_statement_from_row(self.full_row)
         self.assertEqual(s, {
-            'type': 'statement', 'mainsnak': {
+            'type': 'statement', 'rank': 'normal', 'mainsnak': {
                 'snaktype': 'value', 'property': 'P1259', 'datavalue': {
                     'type': 'globecoordinate', 'value': {
                         'globe': 'http://www.wikidata.org/entity/Q2',
-                        'latitude': '51.71051', 'longitude': '-2.2766',
+                        'latitude': 51.71051, 'longitude': -2.2766,
                         'precision': 0.002}}},
             'qualifiers': {'P7787': [{
                 'snaktype': 'value', 'property': 'P7787', 'datavalue': {
@@ -109,13 +109,17 @@ class FromRowTests(unittest.TestCase):
     def test_full_row_ostmt(self):
         s = object_statement_from_row(self.full_row)
         self.assertEqual(s, {
-            'type': 'statement', 'mainsnak': {
-                'snaktype': 'value', 'property': 'P625', 'datavalue': {
+            'type': 'statement', 'rank': 'normal', 'mainsnak': {
+                'snaktype': 'value', 'property': 'P9149', 'datavalue': {
                     'type': 'globecoordinate', 'value': {
                         'globe': 'http://www.wikidata.org/entity/Q2',
-                        'latitude': '51.71069', 'longitude': '-2.2773',
+                        'latitude': 51.71069, 'longitude': -2.2773,
                         'precision': 0.002}}},
-            'qualifiers': {}})
+            'qualifiers': {'P7787': [{
+                'snaktype': 'value', 'property': 'P7787', 'datavalue': {
+                    'type': 'quantity', 'value': {
+                        'amount': '+292',
+                        'unit': 'http://www.wikidata.org/entity/Q28390'}}}]}})
     def test_full_row_fmt(self):
         f = format_row(self.full_row)
         self.assertEqual(f,
@@ -133,11 +137,11 @@ class FromRowTests(unittest.TestCase):
     def test_minimal_row_ostmt(self):
         s = object_statement_from_row(self.min_row)
         self.assertEqual(s, {
-            'type': 'statement', 'mainsnak': {
-                'snaktype': 'value', 'property': 'P625', 'datavalue': {
+            'type': 'statement', 'rank': 'normal', 'mainsnak': {
+                'snaktype': 'value', 'property': 'P9149', 'datavalue': {
                     'type': 'globecoordinate', 'value': {
                         'globe': 'http://www.wikidata.org/entity/Q2',
-                        'latitude': '51.712', 'longitude': '-2.25',
+                        'latitude': 51.712, 'longitude': -2.25,
                         'precision': 0.02}}}})
     def test_minimal_row_fmt(self):
         f = format_row(self.min_row)
@@ -308,11 +312,11 @@ class SDCEqualityTests(unittest.TestCase):
                         "rank": "normal"
                     }
                 ],
-                "P625": [
+                "P9149": [
                     {
                         "mainsnak": {
                             "snaktype": "value",
-                            "property": "P625",
+                            "property": "P9149",
                             "hash": "d51d0bf4d806fff7610428a20b9462eb8db3eb2b",
                             "datavalue": {
                                 "value": {
@@ -338,7 +342,7 @@ class SDCEqualityTests(unittest.TestCase):
                                       get_location(self.templates)))
     def test_match_object(self):
         self.assertTrue(
-            statement_matches_template(self.sdc['statements']['P625'][0],
+            statement_matches_template(self.sdc['statements']['P9149'][0],
                                       get_object_location(self.templates)))
     def test_nomatch_lat(self):
         (self.sdc['statements']['P1259'][0]['mainsnak']
