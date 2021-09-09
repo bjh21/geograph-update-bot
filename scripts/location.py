@@ -117,11 +117,12 @@ def latlon_from_grid(grid, e, n, digits, use6fig):
     # So SO8001 is the 1km square whose SW corner is at
     # (380000,201000).  To convert a grid reference to lat/lon, we
     # really want to use the location of the centre of the square, but
-    # Geograph stores the SW corner, so we need to add half a square
-    # in each direction based on the length of the grid reference.
+    # Geograph usually stores the SW corner, so we need to round down
+    # and then add half a square in each direction based on the length
+    # of the grid reference.
     square = 10**(5-digits/2)
-    e += 0.5 * square
-    n += 0.5 * square
+    e = (e // square + 0.5) * square
+    n = (n // square + 0.5) * square
     lat, lon = transformers[grid].transform(e, n)
     # At 6dp, one ulp in latitude is about 11cm.  In longitude, about
     # 6cm.  Thus 6dp is enough to distinguish 10-figure GRs in latitude,
@@ -214,7 +215,7 @@ def location_from_row(row, mapit = None):
     # Consensus on Commons seems to be that 1km is not sufficient for
     # camera location, but is acceptable for object location if that's
     # all we've got.
-    if digits == 4:
+    if digits <= 4:
         return None
     t = location_from_grid(grid, e, n, digits, heading, use6fig, mapit)
     return t
@@ -226,7 +227,7 @@ def camera_statement_from_row(row):
     # Consensus on Commons seems to be that 1km is not sufficient for
     # camera location, but is acceptable for object location if that's
     # all we've got.
-    if digits == 4:
+    if digits <= 4:
         return None
     s = statement_from_grid(grid, e, n, digits, heading, use6fig)
     return s
