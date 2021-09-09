@@ -71,7 +71,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         ('add', 'remove'):
         "[[User:Geograph Update Bot/GEO|Added]] camera location from "
         "Geograph ({row}) and [[User:Geograph Update Bot/GEO|removed]] "
-        "Geograph-derived 1km-precision object location",
+        "Geograph-derived ≤1km-precision object location",
         ('add', None):
         "[[User:Geograph Update Bot/GEO|Added]] camera location from Geograph "
         "({row})",
@@ -87,24 +87,24 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         "[[User:Geograph Update Bot/GEO|Updated]] camera location "
         "({camera_move}) from Geograph ({row}) "
         "and [[User:Geograph Update Bot/GEO|removed]] Geograph-derived "
-        "1km-precision object location",
+        "≤1km-precision object location",
         ('update', None):
         "[[User:Geograph Update Bot/GEO|Updated]] camera location "
         "({camera_move}) from Geograph ({row})",
         ('remove', 'add'):
         "[[User:Geograph Update Bot/GEO|Removed]] Geograph-derived camera "
-        "location (no longer on Geograph, or 1km precision) "
+        "location (no longer on Geograph, or ≤1km precision) "
         "and [[User:Geograph Update Bot/GEO|added]] object location from "
         "Geograph ({row})",
         ('remove', 'update'):
         "[[User:Geograph Update Bot/GEO|Removed]] Geograph-derived camera "
-        "location (no longer on Geograph, or 1km precision) "
+        "location (no longer on Geograph, or ≤1km precision) "
         "and [[User:Geograph Update Bot/GEO|updated]] object location "
         "({object_move}) from Geograph ({row})",
         # ('remove', 'remove') should be impossible
         ('remove', None):
         "[[User:Geograph Update Bot/GEO|Removed]] Geograph-derived camera "
-        "location (no longer on Geograph, or 1km precision)",
+        "location (no longer on Geograph, or ≤1km precision)",
         (None, 'add'):
         "[[User:Geograph Update Bot/GEO|Added]] object location from Geograph "
         "({row})",
@@ -113,7 +113,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         "({object_move}) from Geograph ({row})",
         (None, 'remove'):
         "[[User:Geograph Update Bot/GEO|Removed]] Geograph-derived "
-        "1km-precision object location",
+        "≤1km-precision object location",
         (None, None): ""
     }
     def unmodified_on_geograph_since_upload(self, page, row):
@@ -246,7 +246,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                             bot.log("Considering P1259 update")
                             if not statement_matches_template(s, old_location):
                                 raise SDCMismatch("SDC/template mismatch: "
-                                                  "%s vs %s",
+                                                  "%s vs %s" %
                                                   (s, old_location))
                             s_new = camera_statement_from_row(row)
                             if s_new == None:
