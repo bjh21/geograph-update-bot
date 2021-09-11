@@ -159,6 +159,8 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         if old_template == None or new_template == None: return None
         azon, azno, distance = (
             az_dist_between_locations(old_template, new_template))
+        if distance >= 1000:
+            return "moved %.1f km %s" % (distance/1000, format_direction(azon))
         return "moved %.1f m %s" % (distance, format_direction(azon))
     def get_sdc_statements(self, page):
         # SDC data aren't preloaded, so we make an API request every time.
