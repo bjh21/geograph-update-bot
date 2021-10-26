@@ -1,0 +1,14 @@
+#! /bin/bash
+
+set -euo pipefail
+
+export WGET_OPTIONS='--progress=dot:giga'
+
+./mkvenv venv
+
+( cd geograph-db && ./geograph_fetch && ./geograph_import )
+
+venv/bin/python3 scripts/update_metadata.py -v -pt:5 -log -recent:8
+venv/bin/python3 scripts/upgrade_size.py -v -pt:30 -log -recent:8
+venv/bin/python3 scripts/spot_duplicates.py
+venv/bin/python3 scripts/spot_rejected.py
