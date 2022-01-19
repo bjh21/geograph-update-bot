@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 import gzip
+import os
 import sqlite3
 
 def parse_line(line):
@@ -12,6 +13,9 @@ def parse_line_base(line):
 
 def import_table(db, tablename, parser):
     filename = tablename + ".tsv.gz"
+    mtime = os.stat(filename).st_mtime
+    db.execute("INSERT INTO sources VALUES (?, datetime(?, 'unixepoch')||'Z')",
+               (tablename, mtime))
     with gzip.open(filename, mode='rt', encoding='cp1252') as tsvfile:
         # Read and discard heading line.
         heading = parser(tsvfile.readline())
@@ -20,6 +24,11 @@ def import_table(db, tablename, parser):
         db.executemany(stmt, map(parser, tsvfile))
 
 with sqlite3.connect("geograph.sqlite3") as db:
+    db.execute("""
+      CREATE TABLE sources (
+        tablename TEXT,
+        last_modified TEXT
+      )""")
     db.execute("""
       CREATE TABLE gridimage_base (
         gridimage_id INTEGER PRIMARY KEY,
