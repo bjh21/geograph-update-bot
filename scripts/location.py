@@ -326,18 +326,6 @@ def statement_matches_template(statement, template):
     # If we've survived all that, they probably match.
     return True
 
-def location_statement_from_row(row):
-    """
-    Notes:
-    P9149 -> lat, lon, prec
-    P1259 -> lat, lon, prec
-      P7787 -> hdg, hdg - 11.25, hdg + 11.25, Q28390
-    refs:
-      P248 -> Q1503119
-      P854 -> https://www.geograph.org.uk/photo/{gridimage_id}
-      P577 -> {last_modified}
-    """
-
 # This is overkill, but since I've got pyproj lying around...
 geod = pyproj.Geod(ellps='WGS84')
 def az_dist_between_locations(loc1, loc2):
