@@ -3,7 +3,7 @@
 set -euo pipefail
 
 function fetch {
-    wget ${WGET_OPTIONS-} "${@}"
+    wget --timestamping ${WGET_OPTIONS-} "${@}"
 }
 
 fetch 'http://data.geograph.org.uk/dumps/gridimage_base.tsv.gz' \
