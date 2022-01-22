@@ -230,6 +230,7 @@ def camera_statement_from_row(row):
     if digits <= 4:
         return None
     s = statement_from_grid(grid, e, n, digits, heading, use6fig)
+    add_references_to_statement(s, row)
     return s
 
 def object_grid_from_row(row):
@@ -272,7 +273,48 @@ def object_statement_from_row(row):
         return None
     s = statement_from_grid(grid, e, n, digits, heading, use6fig)
     s['mainsnak']['property'] = "P9149"
+    add_references_to_statement(s, row)
     return s
+
+def add_references_to_statement(s, row):
+    refsnaks = {
+        "P248": [{
+            "property": "P248",
+            "snaktype": "value",
+            "datatype": "wikibase-item",
+            "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                    "entity-type": "item",
+                    "id": "Q1503119",
+                    "numeric-id": 1503119
+        }}}],
+        "P7384": [{
+            "property": "P7384",
+            "snaktype": "value",
+            "datatype": "external-id",
+            "datavalue": {
+                "type": "string",
+                "value": f"{row['gridimage_id']}"
+        }}],
+        "P813": [{
+            "property": "P813",
+            "snaktype": "value",
+            "datatype": "time",
+            "datavalue": {
+                "type": "time",
+                "value": {
+                    "time": f"+{row['last_modified'][:10]}T00:00:00Z",
+                    "timezone": 0,
+                    "calendarmodel": "http://www.wikidata.org/entity/Q1985727",
+                    "precision": 11,
+                    "before": 0,
+                    "after": 0
+                }
+            }}]
+        }
+    ref = { "snaks": refsnaks, "snaks-order": ["P248", "P7384", "P813"] }
+    s["references"] = [ref]
 
 # Determine whether a structured data statement is equivalent to a
 # given template.  This is useful because we'd like to detect

@@ -191,8 +191,8 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         c = geodb.cursor()
         c.execute("""
             SELECT * FROM gridimage_base NATURAL JOIN gridimage_geo
-                          NATURAL JOIN gridimage_extra
-               WHERE gridimage_id = ?
+                          NATURAL JOIN gridimage_extra, sources
+               WHERE gridimage_id = ? AND sources.tablename = 'gridimage_geo'
             """, (gridimage_id,))
         row = c.fetchone()
         if row == None:
