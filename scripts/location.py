@@ -279,7 +279,7 @@ def object_statement_from_row(row):
 def add_references_to_statement(s, row):
     refsnaks = {
         "P248": [{
-            "property": "P248",
+            "property": "P248", # stated in
             "snaktype": "value",
             "datatype": "wikibase-item",
             "datavalue": {
@@ -290,7 +290,7 @@ def add_references_to_statement(s, row):
                     "numeric-id": 1503119
         }}}],
         "P7384": [{
-            "property": "P7384",
+            "property": "P7384", # geograph.org.uk image ID
             "snaktype": "value",
             "datatype": "external-id",
             "datavalue": {
@@ -298,7 +298,7 @@ def add_references_to_statement(s, row):
                 "value": f"{row['gridimage_id']}"
         }}],
         "P813": [{
-            "property": "P813",
+            "property": "P813", # retrieved
             "snaktype": "value",
             "datatype": "time",
             "datavalue": {
