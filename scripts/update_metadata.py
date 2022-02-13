@@ -284,6 +284,22 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                                 sdc_object_action = 'update'
                             sdc_edits.setdefault('claims', [])
                             sdc_edits['claims'].append(s_new)
+                    # If we're updating SDC anyway, consider adding missing
+                    # geocoding statements.
+                    if (sdc_object_action != None and
+                        'P1259' not in statements and should_set_cam):
+                        s_new = camera_statement_from_row(row)
+                        if s_new != None:
+                            sdc_camera_action = 'add'
+                            sdc_edits.setdefault('claims', [])
+                            sdc_edits['claims'].append(s_new)
+                    if (sdc_camera_action != None and
+                        'P9149' not in statements and should_set_obj):
+                        s_new = object_statement_from_row(row)
+                        if s_new != None:
+                            sdc_object_action = 'add'
+                            sdc_edits.setdefault('claims', [])
+                            sdc_edits['claims'].append(s_new)
                 # Do it if necessary:
                 mapit.allowed = True
                 if should_set_cam:
