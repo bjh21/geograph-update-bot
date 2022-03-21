@@ -23,13 +23,16 @@ def find_duplicates():
             "* [https://www.geograph.org.uk/photo/%d %d]" %
             (gridimage_id, gridimage_id), file=outfile)
         pageids = row[1].split(",")
-        mwrequest = site._simple_request(action="query",
-                                         pageids="|".join(pageids),
-                                         prop="imageinfo|images|links",
-                                         iiprop="size", imlimit="max",
-                                         plnamespace="6", pllimit="max")
+        mwrequest = site._simple_request(
+            action="query", pageids="|".join(pageids),
+            prop="categories|imageinfo|images|links",
+            clprop="sortkey", cllimit="max",
+            clcategories="Category:Images from Geograph Britain and Ireland",
+            iiprop="size", imlimit="max",
+            plnamespace="6", pllimit="max")
         data = mwrequest.submit()
-        items = data['query']['pages'].values()
+        items = sorted(data['query']['pages'].values(),
+                       key=lambda i: i["categories"][0]["sortkey"])
         crosslinks = {(s['title'], d['title'])
                       for s in items
                       for d in
