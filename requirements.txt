@@ -1,6 +1,7 @@
 # pip requirements for running geograph-update-bot
 python-dateutil
 mwparserfromhell
+Pillow
 pyproj >= 2.1.0
 pywikibot >= 7.0.0
 requests

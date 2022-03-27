@@ -1,23 +1,19 @@
+from io import BytesIO
+from PIL import Image, ImageChops, ImageOps, ImageStat
 import pywikibot
 import pywikibot.bot as bot
 import pywikibot.comms.http as http
 import pywikibot.data.api as api
-import subprocess
-import tempfile
 
 def url_to_file(url):
     r = http.fetch(url)
     r.raise_for_status()
-    tf = tempfile.NamedTemporaryFile()
-    tf.write(r.content)
-    tf.flush()
-    return tf
+    return BytesIO(r.content)
 
 def compare_by_url(url0, url1, w, h):
-    tfs = [url_to_file(url) for url in (url0, url1)]
-    inputs = [["JPEG:" + tf.name, '-resize', '%dx%d' % (w, h)] for tf in tfs]
-    rmse = float(subprocess.check_output(["convert", "-metric", "rmse"] +
-        sum(inputs, []) + ["-compare", "-format", "%[distortion]", "info:"]))
+    images = [Image.open(url_to_file(url)) for url in (url0, url1)]
+    rmse = ImageStat.Stat(
+        ImageOps.grayscale(ImageChops.difference(*images))).rms[0] / 256
     bot.log("RMSE between newest 2 versions: %f" % rmse)
     return rmse
 
