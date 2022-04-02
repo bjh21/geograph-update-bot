@@ -10,7 +10,6 @@ import sys
 import toolforge
 
 def find_duplicates():
-    last_id = dup_id = -1
     outfile = StringIO()
     site = pywikibot.Site()
     conn = toolforge.connect('commonswiki')
