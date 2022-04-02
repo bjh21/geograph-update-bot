@@ -4,20 +4,27 @@ from io import StringIO
 from itertools import groupby
 import pywikibot
 import pywikibot.bot as bot
-import pywikibot.comms.http as http
 import pywikibot.data.api as api
 import pywikibot.pagegenerators
 import sys
+import toolforge
 
 def find_duplicates():
     last_id = dup_id = -1
     outfile = StringIO()
     site = pywikibot.Site()
-    r = http.fetch(
-        "https://quarry.wmflabs.org/query/58785/result/latest/0/json")
-    r.raise_for_status()
-    j = r.json()
-    for row in j['rows']:
+    conn = toolforge.connect('commonswiki')
+    cur = conn.cursor()
+    cur.execute(
+        """  SELECT CAST(cl_sortkey_prefix AS INTEGER) AS gridimage_id,
+                    GROUP_CONCAT(cl_from) AS page_ids
+               FROM categorylinks
+              WHERE cl_to = 'Images_from_Geograph_Britain_and_Ireland'
+                AND cl_type = 'file'
+                AND cl_sortkey_prefix <> ''
+           GROUP BY cl_sortkey_prefix
+             HAVING COUNT(*) > 1""")
+    for row in cur:
         gridimage_id = row[0]
         print(
             "* [https://www.geograph.org.uk/photo/%d %d]" %

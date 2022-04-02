@@ -6,3 +6,4 @@ pyproj >= 2.1.0
 pywikibot >= 7.0.0
 requests
 requests-oauthlib
+toolforge
