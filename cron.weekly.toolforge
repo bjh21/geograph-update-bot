@@ -3,7 +3,7 @@
 set -euo pipefail
 
 export WGET_OPTIONS='--progress=dot:giga'
-export curl_options='---silent'
+export curl_options='--silent'
 
 srcdir="${PWD}"
 workdir="$(mktemp -t -d "geograph-update-bot-XXXXXX")"
