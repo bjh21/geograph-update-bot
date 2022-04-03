@@ -5,13 +5,19 @@ set -euo pipefail
 export WGET_OPTIONS='--progress=dot:giga'
 export curl_options='---silent'
 
-rm -rf venv geograph-db/geograph.sqlite3
+srcdir="${PWD}"
+workdir="$(mktemp -t -d "geograph-update-bot-XXXXXX")"
 
-./mkvenv venv
+./mkvenv "${workdir}/venv"
 
-( cd geograph-db && ./geograph_fetch && ./geograph_import )
+( cd "${workdir}" &&
+  ${srcdir}/geograph-db/geograph_fetch &&
+  ${srcdir}/geograph-db/geograph_import )
 
-venv/bin/python3 scripts/update_metadata.py -v -pt:5 -log -recent:8
-venv/bin/python3 scripts/upgrade_size.py -v -pt:30 -log -recent:8
-venv/bin/python3 scripts/spot_rejected.py
-venv/bin/python3 scripts/spot_duplicates.py
+export geograph_db="${workdir}/geograph.sqlite3"
+py="${workdir}/venv/bin/python3"
+
+"${py}" scripts/update_metadata.py -v -pt:5 -log -recent:8
+"${py}" scripts/upgrade_size.py -v -pt:30 -log -recent:8
+"${py}" scripts/spot_rejected.py
+"${py}" scripts/spot_duplicates.py
