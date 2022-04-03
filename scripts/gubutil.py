@@ -81,7 +81,7 @@ def GeographBotUploads(parameters = None, **kwargs):
 import sqlite3
 from dateutil.tz import gettz
 
-geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
+geodb = connect_geograph_db()
 geodb.row_factory = sqlite3.Row
 
 def ModifiedGeographs(modified_since, submitted_before):
