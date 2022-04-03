@@ -19,7 +19,8 @@ from location import (location_from_row, object_location_from_row,
                       format_direction, get_location, has_object_location,
                       set_location, set_object_location)
 
-from gubutil import get_gridimage_id, TooManyTemplates, tlgetone
+from gubutil import (connect_geograph_db, get_gridimage_id, TooManyTemplates,
+                     tlgetone)
 
 # Ways that Geograph locations get in:
 # BotMultichill (example?)
@@ -27,7 +28,7 @@ from gubutil import get_gridimage_id, TooManyTemplates, tlgetone
 # File Upload Bot (Magnus Manske)
 # Geograph2commons
 
-geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
+geodb = connect_geograph_db()
 geodb.row_factory = sqlite3.Row
 
 class NotEligible(Exception):

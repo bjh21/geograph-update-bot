@@ -20,9 +20,10 @@ import compare
 from compare import compare_revisions
 import mwparserfromhell
 
-from gubutil import canonicalise_name, tlgetone, GeoGeneratorFactory
+from gubutil import (
+    connect_geograph_db, canonicalise_name, tlgetone, GeoGeneratorFactory)
 
-geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
+geodb = connect_geograph_db()
 geodb.row_factory = sqlite3.Row
 
 def get_geograph_info(gridimage_id):

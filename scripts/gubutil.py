@@ -2,7 +2,13 @@
 
 from functools import partial
 from itertools import filterfalse
+from os import environ
 import re
+
+# Open the Geograph database
+def connect_geograph_db():
+    return sqlite3.connect(environ.get("geograph_db",
+                                       "geograph-db/geograph.sqlite3"))
 
 # Template searching functions.
 

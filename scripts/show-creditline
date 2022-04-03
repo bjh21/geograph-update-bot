@@ -5,7 +5,9 @@ import sqlite3
 from creditline import otherfields_from_row
 import sys
 
-geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
+from gubutil import connect_geograph_db()
+
+geodb = connect_geograph_db()
 geodb.row_factory = sqlite3.Row
 
 def main():

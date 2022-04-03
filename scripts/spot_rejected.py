@@ -8,8 +8,9 @@ import pywikibot.data.api as api
 import pywikibot.pagegenerators
 import sqlite3
 from urllib.parse import urlsplit
+from gubutil import connect_geograph_db
 
-geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
+geodb = connect_geograph_db()
 geodb.row_factory = sqlite3.Row
 
 def find_rejected():

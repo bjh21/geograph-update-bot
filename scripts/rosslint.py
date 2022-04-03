@@ -10,11 +10,11 @@ import re
 import sqlite3
 from urllib.parse import urlencode
 
-from gubutil import tlgetone
+from gubutil import connect_geograph_db, tlgetone
 
 site = pywikibot.Site()
 
-geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
+geodb = connect_geograph_db()
 geodb.row_factory = sqlite3.Row
 
 client = requests.Session()

@@ -4,8 +4,9 @@ from __future__ import division, print_function, unicode_literals
 import sqlite3
 from location import location_from_row, object_location_from_row
 import sys
+from gubutil import connect_geograph_db
 
-geodb = sqlite3.connect('geograph-db/geograph.sqlite3')
+geodb = connect_geograph_db()
 geodb.row_factory = sqlite3.Row
 
 def main():
