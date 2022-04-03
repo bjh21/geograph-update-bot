@@ -5,7 +5,7 @@ set -euo pipefail
 export WGET_OPTIONS='--progress=dot:giga'
 export curl_options='---silent'
 
-rm -r venv geograph-db/geograph.sqlite3
+rm -rf venv geograph-db/geograph.sqlite3
 
 ./mkvenv venv
 
