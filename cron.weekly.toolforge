@@ -19,5 +19,5 @@ py="${workdir}/venv/bin/python3"
 
 "${py}" scripts/update_metadata.py -v -pt:5 -log -recent:8
 "${py}" scripts/upgrade_size.py -v -pt:30 -log -recent:8
-"${py}" scripts/spot_rejected.py
+# "${py}" scripts/spot_rejected.py
 "${py}" scripts/spot_duplicates.py
