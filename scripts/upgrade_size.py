@@ -21,7 +21,8 @@ from compare import compare_revisions
 import mwparserfromhell
 
 from gubutil import (
-    connect_geograph_db, canonicalise_name, tlgetone, GeoGeneratorFactory)
+    connect_geograph_db, canonicalise_name, tlgetone, TooManyTemplates,
+    GeoGeneratorFactory)
 
 geodb = connect_geograph_db()
 geodb.row_factory = sqlite3.Row
@@ -127,6 +128,8 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             geograph_template = tlgetone(tree, ['Geograph'])
         except IndexError:
             raise NotEligible("No {{Geograph}} template")
+        except TooManyTemplates:
+            raise BadTemplate("Too many {{Geograph}} templates")
         try:
             gridimage_id = int(str(geograph_template.get(1).value))
             commons_author = str(geograph_template.get(2).value)
