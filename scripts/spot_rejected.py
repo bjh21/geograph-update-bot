@@ -55,9 +55,10 @@ def find_rejected():
         except Exception:
             pass
     reportpage = pywikibot.Page(site,
-                "User:Geograph Update Bot/images rejected from Geograph/data")
+                "User:Geograph Update Bot/images rejected from Geograph")
     reportpage.text = (
-        "<!-- This page will be overwritten by Geograph Update Bot -->\n")
+        "<!-- This page will be overwritten by Geograph Update Bot -->\n"
+        "{{/header}}\n")
     reportpage.text += outfile.getvalue()
     reportpage.save("[[User:Geograph Update Bot/REJR|Updated]] list "
                     "of rejected IDs")
