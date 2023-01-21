@@ -15,6 +15,8 @@ from math import copysign
 import mwparserfromhell
 import re
 import sqlite3
+from uuid import uuid4
+
 from creditline import creditline_from_row, can_add_creditline, add_creditline
 from location import (location_from_row, object_location_from_row,
                       camera_statement_from_row, object_statement_from_row,
@@ -333,6 +335,13 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             bot.log("Cannot add credit line")
         newtext = str(tree)
         if newtext != page.text:
+            editgroup_summary = ""
+            if sdc_edits:
+                # Generate an edit group ID.  See
+                # <https://commons.wikimedia.org/wiki/
+                # Commons:Edit_groups/Adding_a_tool>
+                summary_suffix = (" ([[:toolforge:editgroups-commons/b/CB/"
+                                  f"{uuid4().hex}|details]])")
             format_params = dict(row=format_row(row))
             if camera_action == 'update':
                 format_params['camera_move'] = (
@@ -356,6 +365,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 # with a link back to this page.'
                 summary += (
                     " [Powered by MapIt: https://global.mapit.mysociety.org]")
+            summary += editgroup_summary
             bot.log("edit summary: %s" % (summary,))
             # Before we save, make sure pywikibot's view of the latest
             # revision hasn't changed.  If it has, that invalidates
@@ -371,6 +381,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 sdc_summary = (self.summary_formats[(sdc_camera_action,
                                                      sdc_object_action)]
                                .format(**format_params))
+                sdc_summary += editgroup_summary
                 bot.log("SDC edit summary: %s" % (sdc_summary,))
                 self.site._simple_request(
                     action='wbeditentity', format='json',
