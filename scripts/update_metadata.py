@@ -340,8 +340,8 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                 # Generate an edit group ID.  See
                 # <https://commons.wikimedia.org/wiki/
                 # Commons:Edit_groups/Adding_a_tool>
-                summary_suffix = (" ([[:toolforge:editgroups-commons/b/CB/"
-                                  f"{uuid4().hex}|details]])")
+                editgroup_summary = (" ([[:toolforge:editgroups-commons/b/CB/"
+                                     f"{uuid4().hex}|details]])")
             format_params = dict(row=format_row(row))
             if camera_action == 'update':
                 format_params['camera_move'] = (
