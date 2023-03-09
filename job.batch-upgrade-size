@@ -1,0 +1,20 @@
+#! /bin/bash
+
+set -euo pipefail
+
+export WGET_OPTIONS='--progress=dot:giga'
+export curl_options='--silent'
+
+srcdir="${PWD}"
+workdir="$(mktemp -t -d "geograph-update-bot-XXXXXX")"
+
+./mkvenv "${workdir}/venv"
+
+( cd "${workdir}" &&
+  ${srcdir}/geograph-db/geograph_fetch &&
+  ${srcdir}/geograph-db/geograph_import )
+
+export geograph_db="${workdir}/geograph.sqlite3"
+py="${workdir}/venv/bin/python3"
+
+"${py}" scripts/upgrade_size.py -v -log -bynumber
