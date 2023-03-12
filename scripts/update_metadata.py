@@ -118,17 +118,6 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         "≥1km-precision object location",
         (None, None): ""
     }
-    def unmodified_on_geograph_since_upload(self, page, row):
-        commons_dt = page.oldest_revision.timestamp
-        # For some reason, pywikibot.Timestamps aren't timezone-aware.
-        commons_dt = commons_dt.replace(tzinfo=timezone.utc)
-        geograph_date = row['upd_timestamp']
-        geograph_dt = (
-            datetime.strptime(geograph_date, "%Y-%m-%d %H:%M:%S")
-            .replace(tzinfo=gettz("Europe/London")))
-        bot.log("Commons timestamp: %s; Geograph timestamp: %s" %
-                (commons_dt, geograph_dt))
-        return geograph_dt < commons_dt
     def should_set_location(self, old_template, new_template, desc):
         oldparam = location_params(old_template)
         newparam = location_params(new_template)
@@ -326,8 +315,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                         else:
                             object_action = 'update'
         creditline = creditline_from_row(row)
-        if (can_add_creditline(tree, creditline) and
-            self.unmodified_on_geograph_since_upload(page, row)):
+        if (can_add_creditline(tree, creditline)):
             add_creditline(tree, creditline)
             creditline_added = True
             minor = False
