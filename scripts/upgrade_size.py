@@ -200,10 +200,17 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         compare_revisions(self.site, parameters=dict(titles=page.title()))
     def replace_file(self, page, newurl):
         bot.log("Uploading from %s" % (newurl,))
+        def upload_problem(errors):
+            carry_on = True
+            for e in errors:
+                if e.code != 'exists':
+                    bot.warning(str(e))
+                    carry_on = False
+            return carry_on
         success = page.upload(newurl, 
                               comment="[[User:Geograph Update Bot/RES|"
                               "Higher-resolution]] version from Geograph",
-                        ignore_warnings=['exists'])
+                              ignore_warnings=upload_problem)
         if not success:
             raise UploadFailed("upload from %s to %s failed" % (newurl, page))
         return
