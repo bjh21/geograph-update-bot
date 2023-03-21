@@ -90,6 +90,8 @@ class MinorProblem(Exception):
     pass
 class BadTemplate(MinorProblem):
     pass
+class BadSDC(MinorProblem):
+    pass
 class NotInGeographDatabase(MinorProblem):
     pass
 class UploadFailed(MinorProblem):
@@ -120,23 +122,49 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         # assign the generator to the bot
         self.generator = generator
         self.geograph = pywikibot.Page(self.site, "Template:Geograph")
+    def get_sdc_statements(self, page):
+        # SDC data aren't preloaded, so we make an API request every time.
+        # This could be better, wbgetentities can do batches of pages just
+        # like query.
+        mediaid = 'M%d' % (page.pageid,)
+        request = self.site.simple_request(action='wbgetentities',
+                                           ids=mediaid, props='claims')
+        data = request.submit()
+        return data['entities'][mediaid].get('statements', {})
     def process_page(self, page):
         if not page.botMayEdit():
             raise NotEligible("bot forbidden from editing this page")
         tree = mwparserfromhell.parse(page.text)
         try:
-            geograph_template = tlgetone(tree, ['Geograph'])
+            geograph_template = tlgetone(tree,
+                                         ['Geograph',
+                                          'Geograph from structured data'])
         except IndexError:
-            raise NotEligible("No {{Geograph}} template")
+            raise NotEligible("No {{Geograph}} or "
+                              "{{Geograph from structured data}} template")
         except TooManyTemplates:
-            raise BadTemplate("Too many {{Geograph}} templates")
-        try:
-            gridimage_id = int(str(geograph_template.get(1).value))
-            commons_author = str(geograph_template.get(2).value)
-        except ValueError:
-            raise BadTemplate("broken {{Geograph}} template")
-        except IndexError:
-            raise BadTemplate("broken {{Geograph}} template")
+            raise BadTemplate("Too many {{Geograph}} and "
+                              "{{Geograph from structured data}} templates")
+        if geograph_template.name == "Geograph from structured data":
+            sdc = self.get_sdc_statements(page)
+            try:
+                gridimage_id = int(sdc['P7482'][0]['qualifiers']['P7384'][0]
+                                   ['datavalue']['value'])
+                commons_author = (sdc['P275'][0]['qualifiers']['P2093'][0]
+                                  ['datavalue']['value'])
+                commons_title =  (sdc['P275'][0]['qualifiers']['P1476'][0]
+                                  ['datavalue']['value']['text'])
+            except IndexError:
+                raise BadSDC("SDC doesn't match Geograph pattern")
+        else:            
+            try:
+                gridimage_id = int(str(geograph_template.get(1).value))
+                commons_author = str(geograph_template.get(2).value)
+                commons_title = None
+            except ValueError:
+                raise BadTemplate("broken {{Geograph}} template")
+            except IndexError:
+                raise BadTemplate("broken {{Geograph}} template")
         bot.log("Geograph ID is %d" % (gridimage_id,))
         c = geodb.cursor()
         c.execute("""
@@ -175,14 +203,16 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
             raise NotEligible("author does not match Geograph (%s vs. %s)" %
                               (repr(commons_author),
                                repr(geograph_info['author_name'])))
-        try:
-            credit_line = tlgetone(tree, ['Credit line'])
-        except IndexError:
-            pass
-        else:
-            commons_title = ''.join([
-                str(x) for x in
-                credit_line.get('Other').value.filter_text()]).strip()
+        if commons_title == None:
+            try:
+                credit_line = tlgetone(tree, ['Credit line'])
+            except IndexError:
+                pass
+            else:
+                commons_title = ''.join([
+                    str(x) for x in
+                    credit_line.get('Other').value.filter_text()]).strip()
+        if commons_title != None:
             bot.log("Title on Commons: %s" % (commons_title,))
             if (canonicalise_name(commons_title) !=
                 canonicalise_name(geograph_info['title'])):
