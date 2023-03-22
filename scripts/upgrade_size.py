@@ -331,9 +331,11 @@ def InterestingGeographGenerator(site, g):
                                        original_width, original_height):
                 raise NotEligible("aspect ratios of images differ")
             ii = item['imageinfo'][0]
-            if ((ii['width'], ii['height']) ==
-                (original_width, original_height)):
-                # We already have the full-resolution version.
+            if ((ii['width'], ii['height']) in
+                ((original_width, original_height),
+                 (original_height, original_width))):
+                # We already have the full-resolution version or a
+                # rotated version of it.
                 raise NotEligible("high-res version already uploaded")
         except NotEligible as e:
             whynot(gridimage_id, str(e))
