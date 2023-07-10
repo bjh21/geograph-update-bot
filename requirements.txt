@@ -3,7 +3,7 @@ python-dateutil
 mwparserfromhell
 Pillow
 pyproj >= 2.1.0
-pywikibot >= 7.0.0
+pywikibot >= 8.2.0
 requests
 requests-oauthlib
 toolforge
