@@ -29,7 +29,7 @@ def find_duplicates():
             "* [https://www.geograph.org.uk/photo/%d %d]" %
             (gridimage_id, gridimage_id), file=outfile)
         pageids = row[1].split(",")
-        mwrequest = site._simple_request(
+        mwrequest = site.simple_request(
             action="query", pageids="|".join(pageids),
             prop="categories|imageinfo|images|links",
             clprop="sortkey", cllimit="max",

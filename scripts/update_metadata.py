@@ -158,8 +158,8 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
         # This could be better, wbgetentities can do batches of pages just
         # like query.
         mediaid = 'M%d' % (page.pageid,)
-        request = self.site._simple_request(action='wbgetentities',
-                                            ids=mediaid)
+        request = self.site.simple_request(action='wbgetentities',
+                                           ids=mediaid)
         data = request.submit()
         return data['entities'][mediaid].get('statements', {})
     def process_page(self, page):
@@ -371,7 +371,7 @@ class UpdateMetadataBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                                .format(**format_params))
                 sdc_summary += editgroup_summary
                 bot.log("SDC edit summary: %s" % (sdc_summary,))
-                self.site._simple_request(
+                self.site.simple_request(
                     action='wbeditentity', format='json',
                     id='M%d' % (page.pageid,), data=json.dumps(sdc_edits),
                     token=self.site.tokens['csrf'], summary=sdc_summary,
