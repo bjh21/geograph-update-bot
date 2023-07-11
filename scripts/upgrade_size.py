@@ -154,7 +154,7 @@ class UpgradeSizeBot(SingleSiteBot, ExistingPageBot, NoRedirectPageBot):
                                   ['datavalue']['value'])
                 commons_title =  (sdc['P275'][0]['qualifiers']['P1476'][0]
                                   ['datavalue']['value']['text'])
-            except (IndexError, KeyError)
+            except (IndexError, KeyError):
                 raise BadSDC("SDC doesn't match Geograph pattern")
         else:            
             try:
